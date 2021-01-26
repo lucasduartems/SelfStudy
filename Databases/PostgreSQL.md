@@ -112,14 +112,10 @@ A summary and the data types can be found below:
 
 ### FROM
 
-<br>
-
-<tt>
-    <b>SELECT</b> columns<br>
-    <b>FROM</b> &nbsp;&nbsp;table
-</tt>
-
-<br>
+```sql
+SELECT columns
+FROM   table
+```
 <br>
 
 Order of evaluation:
@@ -262,13 +258,11 @@ FROM customer;
 
 ### ORDER BY
 
-<br>
-
-<tt>
-    <b>SELECT</b> &nbsp;&nbsp;columns<br>
-    <b>FROM</b> &nbsp;&nbsp;&nbsp;&nbsp;table<br>
-    <b>ORDER BY</b> sort_expression
-</tt>
+```sql
+SELECT   columns
+FROM     table
+ORDER BY sort_expression
+```
 
 <br>
 <br>
@@ -300,8 +294,6 @@ ORDER BY first_name ASC;
 <br>
 
 #### ASC, DESC
-
-<br>
 
 ```sql
 SELECT first_name, last_name AS full_name
@@ -339,8 +331,6 @@ ORDER BY len;
 
 #### NULLS FIRST, NULLS LAST
 
-<br>
-
 ```sql
 SELECT number
 FROM some_table
@@ -357,12 +347,10 @@ ORDER BY number NULLS FIRST;
 
 ### DISTINCT
 
-<br>
-
-<tt>
-    <b>SELECT DISTINCT</b> column<br>
-    <b>FROM</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;table<br>
-</tt>
+```sql
+SELECT DISTINCT column
+FROM            table
+```
 
 <br>
 <br>
@@ -590,14 +578,13 @@ FROM colors;
 
 ### WHERE
 
-<tt>
-    <b>SELECT</b> &nbsp;&nbsp;columns<br>
-    <b>FROM</b> &nbsp;&nbsp;&nbsp;&nbsp;table<br>
-    <b>WHERE</b> &nbsp;&nbsp;&nbsp;condition<br>
-    <b>ORDER BY</b> sort_expression
-</tt>
+```sql
+SELECT   columns
+FROM     table
+WHERE    condition
+ORDER BY sort_expression
+```
 
-<br>
 <br>
 
 Order of evaluation:
@@ -848,14 +835,13 @@ WHERE payment_date NOT BETWEEN '2007-02-07' AND '2007-02-15'
 
 ### LIMIT
 
-<tt>
-    <b>SELECT</b> &nbsp;&nbsp;columns<br>
-    <b>FROM</b> &nbsp;&nbsp;&nbsp;&nbsp;table<br>
-    <b>ORDER BY</b> sort_expression<br>
-    <b>LIMIT</b> &nbsp;&nbsp;&nbsp;row_count
-</tt>
+```sql
+SELECT   columns
+FROM     table
+ORDER BY sort_expression
+LIMIT    row_count
+```
 
-<br>
 <br>
 
 ```sql
@@ -925,13 +911,13 @@ Altough [LIMIT](#limit) is used by PostgreSQL, MySQL, H2, etc., it is not a SQL 
 
 The `FETCH` clase is equivalent and conforms to SQL standards:
 
-<tt>
-    <b>SELECT</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;columns<br>
-    <b>FROM</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;table<br>
-    <b>ORDER BY</b> &nbsp;&nbsp;&nbsp;sort_expression<br>
-    <b>OFFSET</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;row_count <b>ROWS</b><br>
-    <b>FETCH FIRST</b> row_count <b>ROWS ONLY</b>;
-</tt>
+```sql
+SELECT      columns
+FROM        table
+ORDER BY    sort_expression
+OFFSET      row_count ROWS
+FETCH FIRST row_count ROWS ONLY;
+```
 
 <br>
 <br>
@@ -1499,96 +1485,17 @@ ON a1.color = a2.color;
 
 #### Summary
 
-<table>
-    <tr>
-        <td style="padding: 20px;">
-            <img src="images/inner_join.png">
-        </td>
-        <td>
-            <tt>
-                <b><font color="dodgerblue">SELECT</font></b> * <br>
-                <b><font color="dodgerblue">FROM</font></b> a <b><font color="dodgerblue">INNER JOIN</font></b> b <br>
-                <b><font color="dodgerblue">ON</font></b> a.key = b.key;
-            </tt>
-        </td>
-    </tr>
-    <tr>
-        <td style="padding: 20px;">
-            <img src="images/left_join.png">
-        </td>
-        <td>
-            <tt>
-                <b><font color="dodgerblue">SELECT</font></b> * <br>
-                <b><font color="dodgerblue">FROM</font></b> a <b><font color="dodgerblue">LEFT JOIN</font></b> b <br>
-                <b><font color="dodgerblue">ON</font></b> a.key = b.key;
-            </tt>
-        </td>
-    </tr>
-    <tr>
-        <td style="padding: 20px;">
-            <img src="images/left_join_left_only.png">
-        </td>
-        <td>
-            <tt>
-                <b><font color="dodgerblue">SELECT</font></b> * <br>
-                <b><font color="dodgerblue">FROM</font></b> a <b><font color="dodgerblue">LEFT JOIN</font></b> b <br>
-                <b><font color="dodgerblue">ON</font></b> a.key = b.key<br>
-                <b><font color="dodgerblue">WHERE</font></b> b.key <b><font color="dodgerblue">IS NULL</font></b>;
-            </tt>
-        </td>
-    </tr>
-    <tr>
-        <td style="padding: 20px;">
-            <img src="images/right_join.png">
-        </td>
-        <td>
-            <tt>
-                <b><font color="dodgerblue">SELECT</font></b> * <br>
-                <b><font color="dodgerblue">FROM</font></b> a <b><font color="dodgerblue">RIGHT JOIN</font></b> b <br>
-                <b><font color="dodgerblue">ON</font></b> a.key = b.key;
-            </tt>
-        </td>
-    </tr>
-    <tr>
-        <td style="padding: 20px;">
-            <img src="images/right_join_right_only.png">
-        </td>
-        <td>
-            <tt>
-                <b><font color="dodgerblue">SELECT</font></b> * <br>
-                <b><font color="dodgerblue">FROM</font></b> a <b><font color="dodgerblue">RIGHT JOIN</font></b> b <br>
-                <b><font color="dodgerblue">ON</font></b> a.key = b.key<br>
-                <b><font color="dodgerblue">WHERE</font></b> a.key <b><font color="dodgerblue">IS NULL</font></b>;
-            </tt>
-        </td>
-    </tr>
-    <tr>
-        <td style="padding: 20px;">
-            <img src="images/full_join.png">
-        </td>
-        <td>
-            <tt>
-                <b><font color="dodgerblue">SELECT</font></b> * <br>
-                <b><font color="dodgerblue">FROM</font></b> a <b><font color="dodgerblue">FULL JOIN</font></b> b <br>
-                <b><font color="dodgerblue">ON</font></b> a.key = b.key;
-            </tt>
-        </td>
-    </tr>
-    <tr>
-        <td style="padding: 20px;">
-            <img src="images/full_join_unique.png">
-        </td>
-        <td>
-            <tt>
-                <b><font color="dodgerblue">SELECT</font></b> * <br>
-                <b><font color="dodgerblue">FROM</font></b> a <b><font color="dodgerblue">FULL JOIN</font></b> b <br>
-                <b><font color="dodgerblue">ON</font></b> a.key = b.key<br>
-                <b><font color="dodgerblue">WHERE</font></b> a.key <b><font color="dodgerblue">IS NULL</font></b>
-                <b><font color="dodgerblue">OR</font></b> b.key <b><font color="dodgerblue">IS NULL</font></b>;
-            </tt>
-        </td>
-    </tr>
-</table>
+|                                       |                                                                                                                                                                    |
+|---------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ![](images/inner_join.png)            | <tt>**SELECT** *</tt> <br> <tt>**FROM** a **INNER JOIN** b</tt> <br> <tt>**ON** a.key = b.key;</tt>                                                                |
+| ![](images/left_join.png)             | <tt>**SELECT** *</tt> <br> <tt>**FROM** a **LEFT JOIN** b</tt> <br> <tt>**ON** a.key = b.key;</tt>                                                                 |
+| ![](images/left_join_left_only.png)   | <tt>**SELECT** *</tt> <br> <tt>**FROM** a **LEFT JOIN** b</tt> <br> <tt>**ON** a.key = b.key</tt> <br> <tt>**WHERE** b.key **IS NULL**;</tt>                       |
+| ![](images/right_join.png)            | <tt>**SELECT** *</tt> <br> <tt>**FROM** a **RIGHT JOIN** b</tt> <br> <tt>**ON** a.key = b.key;</tt>                                                                |
+| ![](images/right_join_right_only.png) | <tt>**SELECT** *</tt> <br> <tt>**FROM** a **RIGHT JOIN** b</tt> <br> <tt>**ON** a.key = b.key</tt> <br> <tt>**WHERE** a.key **IS NULL**;</tt>                      |
+| ![](images/full_join.png)             | <tt>**SELECT** *</tt> <br> <tt>**FROM** a **FULL JOIN** b</tt> <br> <tt>**ON** a.key = b.key;</tt>                                                                 |
+| ![](images/full_join_unique.png)      | <tt>**SELECT** *</tt> <br> <tt>**FROM** a **FULL JOIN** b</tt> <br> <tt>**ON** a.key = b.key</tt>  <br> <tt>**WHERE** a.key **IS NULL OR** b.key **IS NULL**;</tt> |
+
+
 
 ```sql
 ```
