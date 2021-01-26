@@ -353,25 +353,10 @@ FROM            table
 ```
 
 <br>
-<br>
 
 The following examples take the example `colors` table below into consideration:
 
-
-| id |            background            |            foreground            |
-|----|----------------------------------|----------------------------------|
-|1   | <font color="red">red</font>     | <font color="red">red</font>     |
-|2   | <font color="red">red</font>     | <font color="red">red</font>     |
-|3   | <font color="red">red</font>     | <font color="gray">[null]</font> |
-|4   | <font color="gray">[null]</font> | <font color="red">red</font>     |
-|5   | <font color="red">red</font>     | <font color="green">green</font> |
-|6   | <font color="red">red</font>     | <font color="blue">blue</font>   |
-|7   | <font color="green">green</font> | <font color="red">red</font>     |
-|8   | <font color="green">green</font> | <font color="blue">blue</font>   |
-|9   | <font color="green">green</font> | <font color="green">green</font> |
-|10  | <font color="blue">blue</font>   | <font color="red">red</font>     |
-|11  | <font color="blue">blue</font>   | <font color="green">green</font> |
-|12  | <font color="blue">blue</font>   | <font color="blue">blue</font>   |
+![](images/table1.png)
 
 <br>
 
@@ -382,13 +367,7 @@ SELECT DISTINCT background
 FROM colors
 ORDER BY background;
 ```
-| background |
-|------------|
-| <font color="blue">blue</font>   |
-| <font color="red">red</font>     |
-| <font color="green">green</font> |
-| <font color="gray">[null]</font> |
-
+![](images/table2.png)
 
 <br>
 
@@ -401,19 +380,7 @@ SELECT DISTINCT background, foreground
 FROM colors
 ORDER BY background, foreground;
 ```
-|            background            |            foreground            |
-|----------------------------------|----------------------------------|
-| <font color="blue">blue</font>   | <font color="blue">blue</font>   |
-| <font color="blue">blue</font>   | <font color="green">green</font> |
-| <font color="blue">blue</font>   | <font color="red">red</font>     |
-| <font color="green">green</font> | <font color="blue">blue</font>   |
-| <font color="green">green</font> | <font color="green">green</font> |
-| <font color="green">green</font> | <font color="red">red</font>     |
-| <font color="red">red</font>     | <font color="blue">blue</font>   |
-| <font color="red">red</font>     | <font color="green">green</font> |
-| <font color="red">red</font>     | <font color="red">red</font>     |
-| <font color="red">red</font>     | <font color="gray">[null]</font> |
-| <font color="gray">[null]</font> | <font color="red">red</font>     |
+![](images/table3.png)
 
 <br>
 
@@ -423,12 +390,7 @@ ORDER BY background, foreground;
 SELECT DISTINCT ON (background) background, foreground
 FROM colors;
 ```
-|            background            |            foreground            |
-|----------------------------------|----------------------------------|
-| <font color="blue">blue</font>   | <font color="red">red</font>     |
-| <font color="green">green</font> | <font color="red">red</font>     |
-| <font color="red">red</font>     | <font color="red">red</font>     |
-| <font color="gray">[null]</font> | <font color="red">red</font>     |
+![](images/table4.png)
 
 <br>
 
@@ -437,125 +399,13 @@ SELECT DISTINCT ON (background) background, foreground
 FROM colors
 ORDER BY background, foreground;
 ```
-|            background            |            foreground            |
-|----------------------------------|----------------------------------|
-| <font color="blue">blue</font>   | <font color="blue">blue</font>   |
-| <font color="green">green</font> | <font color="blue">blue</font>   |
-| <font color="red">red</font>     | <font color="blue">blue</font>   |
-| <font color="gray">[null]</font> | <font color="red">red</font>     |
+![](images/table5.png)
 
 <br>
 
 In the example above the rows are put into groups unique by `background`, each group was sorted by `background, foreground`, and then the *first row* of each group was kept:
 
-<table>
-    <tr>
-        <td>
-            <table>
-                <tr><th>background</th><th>foreground</th></tr>
-                <tr><td><font color="red">red</font></td><td><font color="red">red</font></td></tr>
-                <tr><td><font color="red">red</font></td><td><font color="gray">[null]</font></td></tr>
-                <tr><td><font color="red">red</font></td><td><font color="green">green</font></td></tr>
-                <tr><td><font color="red">red</font></td><td><font color="blue">blue</font></td></tr>
-            </table>
-        </td>
-        <td>&nbsp;</td>
-        <td>
-            <table>
-                <tr><th>background</th><th>foreground</th></tr>
-                <tr><td><font color="red">red</font></td><td><font color="blue">blue</font></td></tr>
-                <tr><td><font color="red">red</font></td><td><font color="green">green</font></td></tr>
-                <tr><td><font color="red">red</font></td><td><font color="red">red</font></td></tr>
-                <tr><td><font color="red">red</font></td><td><font color="gray">[null]</font></td></tr>
-            </table>
-        </td>
-        <td>&nbsp;</td>
-        <td>
-            <table>
-                <tr><th>background</th><th>foreground</th></tr>
-                <tr><td><font color="red">red</font></td><td><font color="blue">blue</font></td></tr>
-            </table>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <table>
-                <tr><th>background</th><th>foreground</th></tr>
-                <tr><td><font color="green">green</font></td><td><font color="red">red</font></td></tr>
-                <tr><td><font color="green">green</font></td><td><font color="blue">blue</font></td></tr>
-                <tr><td><font color="green">green</font></td><td><font color="green">green</font></td></tr>
-            </table>
-        </td>
-        <td>
-            <img src="images/arrow.png">
-        </td>
-        <td>
-            <table>
-                <tr><th>background</th><th>foreground</th></tr>
-                <tr><td><font color="green">green</font></td><td><font color="blue">blue</font></td></tr>
-                <tr><td><font color="green">green</font></td><td><font color="green">green</font></td></tr>
-                <tr><td><font color="green">green</font></td><td><font color="red">red</font></td></tr>
-            </table>
-        </td>
-        <td>
-            <img src="images/arrow.png">
-        </td>
-        <td>
-            <table>
-                <tr><th>background</th><th>foreground</th></tr>
-                <tr><td><font color="green">green</font></td><td><font color="blue">blue</font></td></tr>
-            </table>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <table>
-                <tr><th>background</th><th>foreground</th></tr>
-                <tr><td><font color="blue">blue</font></td><td><font color="red">red</font></td></tr>
-                <tr><td><font color="blue">blue</font></td><td><font color="green">green</font></td></tr>
-                <tr><td><font color="blue">blue</font></td><td><font color="blue">blue</font></td></tr>
-            </table>
-        </td>
-        <td>&nbsp;</td>
-        <td>
-            <table>
-                <tr><th>background</th><th>foreground</th></tr>
-                <tr><td><font color="blue">blue</font></td><td><font color="blue">blue</font></td></tr>
-                <tr><td><font color="blue">blue</font></td><td><font color="green">green</font></td></tr>
-                <tr><td><font color="blue">blue</font></td><td><font color="red">red</font></td></tr>
-            </table>
-        </td>
-        <td>&nbsp;</td>
-        <td>
-            <table>
-                <tr><th>background</th><th>foreground</th></tr>
-                <tr><td><font color="blue">blue</font></td><td><font color="blue">blue</font></td></tr>
-            </table>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <table>
-                <tr><th>background</th><th>foreground</th></tr>
-                <tr><td><font color="gray">[null]</font></td><td><font color="red">red</font></td></tr>
-            </table>
-        </td>
-        <td>&nbsp;</td>
-        <td>
-            <table>
-                <tr><th>background</th><th>foreground</th></tr>
-                <tr><td><font color="gray">[null]</font></td><td><font color="red">red</font></td></tr>
-            </table>
-        </td>
-        <td>&nbsp;</td>
-        <td>
-            <table>
-                <tr><th>background</th><th>foreground</th></tr>
-                <tr><td><font color="gray">[null]</font></td><td><font color="red">red</font></td></tr>
-            </table>
-        </td>
-    </tr>
-</table>
+![](images/table6.png)
 
 <br>
 
@@ -567,12 +417,7 @@ It is a good practice to use `ORDER BY` with `DISTINCT ON (expression)` to make 
 SELECT DISTINCT ON (foreground) background, foreground
 FROM colors;
 ```
-|            background            |            foreground            |
-|----------------------------------|----------------------------------|
-| <font color="blue">blue</font>   | <font color="blue">blue</font>   |
-| <font color="green">green</font> | <font color="green">green</font> |
-| <font color="green">green</font> | <font color="red">red</font>     |
-| <font color="red">red</font>     | <font color="gray">[null]</font> |
+![](images/table7.png)
 
 <br>
 
@@ -951,74 +796,17 @@ The common columns are usually the *primary key* of the *first* table and a *for
 
 The join examples below are based on the following `color_a` and `color_b` tables:
 
-<div>
-    <table>
-        <tr>
-            <td>
-                <h3 align="center">color_a</h3>
-                <table>
-                    <tr><th>id</th><th>color</th></tr>
-                    <tr><td>1</td><td><font color="red">red</font></td></tr>
-                    <tr><td>2</td><td><font color="darkorange">orange</font></td></tr>
-                    <tr><td>3</td><td><font color="gold">yellow</font></td></tr>
-                    <tr><td>4</td><td><font color="limegreen">green</font></td></tr>
-                </table>
-            </td>
-            <td>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            </td>
-            <td>
-                <h3 align="center">color_b</h3>
-                <table>
-                    <tr><th>id</th><th>color</th></tr>
-                    <tr><td>1</td><td><font color="darkorange">orange</font></td></tr>
-                    <tr><td>2</td><td><font color="red">red</font></td></tr>
-                    <tr><td>3</td><td><font color="dodgerblue">blue</font></td></tr>
-                    <tr><td>4</td><td><font color="darkmagenta">purple</font></td></tr>
-                </table>
-            </td>
-        </tr>
-    </table>
-</div>
+![](images/table8.png)
 
 <br>
 
 #### INNER JOIN
 
 <div>
-    <table>
-        <tr>
-            <td>
-                <table>
-                    <tr><th>id</th><th>color</th></tr>
-                    <tr><td>1</td><td><font color="red">red</font></td></tr>
-                    <tr><td>2</td><td><font color="darkorange">orange</font></td></tr>
-                    <tr><td>3</td><td><font color="gold">yellow</font></td></tr>
-                    <tr><td>4</td><td><font color="limegreen">green</font></td></tr>
-                </table>
-            </td>
-            <td>
-                &nbsp;
-            </td>
-            <td>
-                <img src="images/inner_join.png">
-            </td>
-            <td>
-                &nbsp;
-            </td>
-            <td>
-                <table>
-                    <tr><th>id</th><th>color</th></tr>
-                    <tr><td>1</td><td><font color="darkorange">orange</font></td></tr>
-                    <tr><td>2</td><td><font color="red">red</font></td></tr>
-                    <tr><td>3</td><td><font color="dodgerblue">blue</font></td></tr>
-                    <tr><td>4</td><td><font color="darkmagenta">purple</font></td></tr>
-                </table>
-            </td>
-        </tr>
-    </table>
+    <img src="images/table9.png">                                 &nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="images/inner_join.png" style="margin-bottom: 3em">  &nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="images/table10.png">
 </div>
-
 
 <br>
 
@@ -1028,10 +816,7 @@ FROM color_a INNER JOIN color_b
 ON color_a.color = color_b.color;
 ```
 
-| id   | color                                  | id   | color                                  |
-|------|----------------------------------------|------|----------------------------------------|
-| 1    | <font color="red">red</font>           | 2    | <font color="red">red</font>           |
-| 2    | <font color="darkorange">orange</font> | 1    | <font color="darkorange">orange</font> |
+![](images/table11.png)
 
 <br>
 <br>
@@ -1041,11 +826,7 @@ SELECT *
 FROM color_b INNER JOIN color_a
 ON color_a.color = color_b.color;
 ```
-
-| id   | color                                  | id   | color                                  |
-|------|----------------------------------------|------|----------------------------------------|
-| 1    | <font color="darkorange">orange</font> | 2    | <font color="darkorange">orange</font> |
-| 2    | <font color="red">red</font>           | 1    | <font color="red">red</font>           |
+![](images/table12.png)
 
 <br>
 
@@ -1057,10 +838,7 @@ FROM color_a A INNER JOIN color_b B
 ON A.color = B.color
 ORDER BY A.color;
 ```
-| color                                  |
-|----------------------------------------|
-| <font color="red">red</font>           |
-| <font color="darkorange">orange</font> |
+![](images/table13.png)
 
 <br>
 
@@ -1071,10 +849,7 @@ SELECT color
 FROM color_a INNER JOIN color_b
 USING(color);
 ```
-| color                                  |
-|----------------------------------------|
-| <font color="red">red</font>           |
-| <font color="darkorange">orange</font> |
+![](images/table13.png)
 
 <br>
 
@@ -1104,7 +879,7 @@ The `dvd rental` brings the following table relationships:
 
  - Each `customer` makes zero or more `payment`s
  - Each `payment` is made by only one `customer`
- 
+
  <br>
 
  - Each `staff` member handles zero or more `payment`s
@@ -1144,39 +919,10 @@ FROM
 #### LEFT OUTER JOIN
 
 <div>
-    <table>
-        <tr>
-            <td>
-                <table>
-                    <tr><th>id</th><th>color</th></tr>
-                    <tr><td>1</td><td><font color="red">red</font></td></tr>
-                    <tr><td>2</td><td><font color="darkorange">orange</font></td></tr>
-                    <tr><td>3</td><td><font color="gold">yellow</font></td></tr>
-                    <tr><td>4</td><td><font color="limegreen">green</font></td></tr>
-                </table>
-            </td>
-            <td>
-                &nbsp;
-            </td>
-            <td>
-                <img src="images/left_join.png">
-            </td>
-            <td>
-                &nbsp;
-            </td>
-            <td>
-                <table>
-                    <tr><th>id</th><th>color</th></tr>
-                    <tr><td>1</td><td><font color="darkorange">orange</font></td></tr>
-                    <tr><td>2</td><td><font color="red">red</font></td></tr>
-                    <tr><td>3</td><td><font color="dodgerblue">blue</font></td></tr>
-                    <tr><td>4</td><td><font color="darkmagenta">purple</font></td></tr>
-                </table>
-            </td>
-        </tr>
-    </table>
+    <img src="images/table9.png">                                &nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="images/left_join.png" style="margin-bottom: 3em">  &nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="images/table10.png">
 </div>
-
 
 <br>
 
@@ -1185,52 +931,17 @@ SELECT *
 FROM color_a LEFT JOIN color_b
 ON color_a.color = color_b.color;
 ```
-
-| id   | color                                   | id                               | color                                  |
-|------|-----------------------------------------|----------------------------------|----------------------------------------|
-| 1    | <font color="red">red</font>            | 2                                | <font color="red">red</font>           |
-| 2    | <font color="darkorange">orange</font>  | 1                                | <font color="darkorange">orange</font> |
-| 3    | <font color="gold">yellow</font>        | <font color="gray">[null]</font> | <font color="gray">[null]</font>       |
-| 4    | <font color="limegreen">green</font>    | <font color="gray">[null]</font> | <font color="gray">[null]</font>       |
+![](images/table14.png)
 
 <br>
 
 #### LEFT OUTER JOIN - only left table rows
 
 <div>
-    <table>
-        <tr>
-            <td>
-                <table>
-                    <tr><th>id</th><th>color</th></tr>
-                    <tr><td>1</td><td><font color="red">red</font></td></tr>
-                    <tr><td>2</td><td><font color="darkorange">orange</font></td></tr>
-                    <tr><td>3</td><td><font color="gold">yellow</font></td></tr>
-                    <tr><td>4</td><td><font color="limegreen">green</font></td></tr>
-                </table>
-            </td>
-            <td>
-                &nbsp;
-            </td>
-            <td>
-                <img src="images/left_join_left_only.png">
-            </td>
-            <td>
-                &nbsp;
-            </td>
-            <td>
-                <table>
-                    <tr><th>id</th><th>color</th></tr>
-                    <tr><td>1</td><td><font color="darkorange">orange</font></td></tr>
-                    <tr><td>2</td><td><font color="red">red</font></td></tr>
-                    <tr><td>3</td><td><font color="dodgerblue">blue</font></td></tr>
-                    <tr><td>4</td><td><font color="darkmagenta">purple</font></td></tr>
-                </table>
-            </td>
-        </tr>
-    </table>
+    <img src="images/table9.png">                                          &nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="images/left_join_left_only.png" style="margin-bottom: 3em">  &nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="images/table10.png">
 </div>
-
 
 <br>
 
@@ -1240,50 +951,17 @@ FROM color_a LEFT JOIN color_b
 ON color_a.color = color_b.color
 WHERE color_b.id IS NULL;
 ```
-
-| id   | color                                   | id                               | color                            |
-|------|-----------------------------------------|----------------------------------|----------------------------------|
-| 3    | <font color="gold">yellow</font>        | <font color="gray">[null]</font> | <font color="gray">[null]</font> |
-| 4    | <font color="limegreen">green</font>    | <font color="gray">[null]</font> | <font color="gray">[null]</font> |
+![](images/table15.png)
 
 <br>
 
 #### RIGHT OUTER JOIN
 
 <div>
-    <table>
-        <tr>
-            <td>
-                <table>
-                    <tr><th>id</th><th>color</th></tr>
-                    <tr><td>1</td><td><font color="red">red</font></td></tr>
-                    <tr><td>2</td><td><font color="darkorange">orange</font></td></tr>
-                    <tr><td>3</td><td><font color="gold">yellow</font></td></tr>
-                    <tr><td>4</td><td><font color="limegreen">green</font></td></tr>
-                </table>
-            </td>
-            <td>
-                &nbsp;
-            </td>
-            <td>
-                <img src="images/right_join.png">
-            </td>
-            <td>
-                &nbsp;
-            </td>
-            <td>
-                <table>
-                    <tr><th>id</th><th>color</th></tr>
-                    <tr><td>1</td><td><font color="darkorange">orange</font></td></tr>
-                    <tr><td>2</td><td><font color="red">red</font></td></tr>
-                    <tr><td>3</td><td><font color="dodgerblue">blue</font></td></tr>
-                    <tr><td>4</td><td><font color="darkmagenta">purple</font></td></tr>
-                </table>
-            </td>
-        </tr>
-    </table>
+    <img src="images/table9.png">                                 &nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="images/right_join.png" style="margin-bottom: 3em">  &nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="images/table10.png">
 </div>
-
 
 <br>
 
@@ -1292,52 +970,17 @@ SELECT *
 FROM color_a RIGHT JOIN color_b
 ON color_a.color = color_b.color;
 ```
-
-| id                               | color                                  | id   | color                                      |
-|----------------------------------|----------------------------------------|------|--------------------------------------------|
-| 2                                | <font color="darkorange">orange</font> | 1    | <font color="darkorange">orange</font>     |
-| 1                                | <font color="red">red</font>           | 2    | <font color="red">red</font>               |
-| <font color="gray">[null]</font> | <font color="gray">[null]</font>       | 3    | <font color="dodgerblue">blue</font>       |
-| <font color="gray">[null]</font> | <font color="gray">[null]</font>       | 4    | <font color="darkmagenta">purple</font>    |
+![](images/table16.png)
 
 <br>
 
 #### RIGHT OUTER JOIN - only right table rows
 
 <div>
-    <table>
-        <tr>
-            <td>
-                <table>
-                    <tr><th>id</th><th>color</th></tr>
-                    <tr><td>1</td><td><font color="red">red</font></td></tr>
-                    <tr><td>2</td><td><font color="darkorange">orange</font></td></tr>
-                    <tr><td>3</td><td><font color="gold">yellow</font></td></tr>
-                    <tr><td>4</td><td><font color="limegreen">green</font></td></tr>
-                </table>
-            </td>
-            <td>
-                &nbsp;
-            </td>
-            <td>
-                <img src="images/right_join_right_only.png">
-            </td>
-            <td>
-                &nbsp;
-            </td>
-            <td>
-                <table>
-                    <tr><th>id</th><th>color</th></tr>
-                    <tr><td>1</td><td><font color="darkorange">orange</font></td></tr>
-                    <tr><td>2</td><td><font color="red">red</font></td></tr>
-                    <tr><td>3</td><td><font color="dodgerblue">blue</font></td></tr>
-                    <tr><td>4</td><td><font color="darkmagenta">purple</font></td></tr>
-                </table>
-            </td>
-        </tr>
-    </table>
+    <img src="images/table9.png">                                            &nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="images/right_join_right_only.png" style="margin-bottom: 3em">  &nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="images/table10.png">
 </div>
-
 
 <br>
 
@@ -1347,50 +990,17 @@ FROM color_a RIGHT JOIN color_b
 ON color_a.color = color_b.color
 WHERE color_a.id IS NULL;
 ```
-
-| id                               | color                                  | id   | color                                      |
-|----------------------------------|----------------------------------------|------|--------------------------------------------|
-| <font color="gray">[null]</font> | <font color="gray">[null]</font>       | 3    | <font color="dodgerblue">blue</font>       |
-| <font color="gray">[null]</font> | <font color="gray">[null]</font>       | 4    | <font color="darkmagenta">purple</font>    |
+![](images/table17.png)
 
 <br>
 
 #### FULL OUTER JOIN
 
 <div>
-    <table>
-        <tr>
-            <td>
-                <table>
-                    <tr><th>id</th><th>color</th></tr>
-                    <tr><td>1</td><td><font color="red">red</font></td></tr>
-                    <tr><td>2</td><td><font color="darkorange">orange</font></td></tr>
-                    <tr><td>3</td><td><font color="gold">yellow</font></td></tr>
-                    <tr><td>4</td><td><font color="limegreen">green</font></td></tr>
-                </table>
-            </td>
-            <td>
-                &nbsp;
-            </td>
-            <td>
-                <img src="images/full_join.png">
-            </td>
-            <td>
-                &nbsp;
-            </td>
-            <td>
-                <table>
-                    <tr><th>id</th><th>color</th></tr>
-                    <tr><td>1</td><td><font color="darkorange">orange</font></td></tr>
-                    <tr><td>2</td><td><font color="red">red</font></td></tr>
-                    <tr><td>3</td><td><font color="dodgerblue">blue</font></td></tr>
-                    <tr><td>4</td><td><font color="darkmagenta">purple</font></td></tr>
-                </table>
-            </td>
-        </tr>
-    </table>
+    <img src="images/table9.png">                                &nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="images/full_join.png" style="margin-bottom: 3em">  &nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="images/table10.png">
 </div>
-
 
 <br>
 
@@ -1399,54 +1009,17 @@ SELECT *
 FROM color_a FULL JOIN color_b
 ON color_a.color = color_b.color;
 ```
-
-| id                               | color                                   | id                               | color                                      |
-|----------------------------------|-----------------------------------------|----------------------------------|--------------------------------------------|
-| 1                                | <font color="red">red</font>            | 2                                | <font color="red">red</font>               |
-| 2                                | <font color="darkorange">orange</font>  | 1                                | <font color="darkorange">orange</font>     |
-| 3                                | <font color="gold">yellow</font>        | <font color="gray">[null]</font> | <font color="gray">[null]</font>           |
-| 4                                | <font color="limegreen">green</font>    | <font color="gray">[null]</font> | <font color="gray">[null]</font>           |
-| <font color="gray">[null]</font> | <font color="gray">[null]</font>        | 3                                | <font color="dodgerblue">blue</font>       |
-| <font color="gray">[null]</font> | <font color="gray">[null]</font>        | 4                                | <font color="darkmagenta">purple</font>    |
+![](images/table18.png)
 
 <br>
 
 #### FULL OUTER JOIN - only rows unique to both tables
 
 <div>
-    <table>
-        <tr>
-            <td>
-                <table>
-                    <tr><th>id</th><th>color</th></tr>
-                    <tr><td>1</td><td><font color="red">red</font></td></tr>
-                    <tr><td>2</td><td><font color="darkorange">orange</font></td></tr>
-                    <tr><td>3</td><td><font color="gold">yellow</font></td></tr>
-                    <tr><td>4</td><td><font color="limegreen">green</font></td></tr>
-                </table>
-            </td>
-            <td>
-                &nbsp;
-            </td>
-            <td>
-                <img src="images/full_join_unique.png">
-            </td>
-            <td>
-                &nbsp;
-            </td>
-            <td>
-                <table>
-                    <tr><th>id</th><th>color</th></tr>
-                    <tr><td>1</td><td><font color="darkorange">orange</font></td></tr>
-                    <tr><td>2</td><td><font color="red">red</font></td></tr>
-                    <tr><td>3</td><td><font color="dodgerblue">blue</font></td></tr>
-                    <tr><td>4</td><td><font color="darkmagenta">purple</font></td></tr>
-                </table>
-            </td>
-        </tr>
-    </table>
+    <img src="images/table9.png">                                       &nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="images/full_join_unique.png" style="margin-bottom: 3em">  &nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="images/table10.png">
 </div>
-
 
 <br>
 
@@ -1456,13 +1029,7 @@ FROM color_a FULL JOIN color_b
 ON color_a.color = color_b.color
 WHERE color_a.id IS NULL OR color_b.id IS NULL;
 ```
-
-| id                               | color                                   | id                               | color                                      |
-|----------------------------------|-----------------------------------------|----------------------------------|--------------------------------------------|
-| 3                                | <font color="gold">yellow</font>        | <font color="gray">[null]</font> | <font color="gray">[null]</font>           |
-| 4                                | <font color="limegreen">green</font>    | <font color="gray">[null]</font> | <font color="gray">[null]</font>           |
-| <font color="gray">[null]</font> | <font color="gray">[null]</font>        | 3                                | <font color="dodgerblue">blue</font>       |
-| <font color="gray">[null]</font> | <font color="gray">[null]</font>        | 4                                | <font color="darkmagenta">purple</font>    |
+![](images/table19.png)
 
 <br>
 
@@ -1473,13 +1040,7 @@ SELECT a1.color AS "Color 1", a2.color AS "Color 2"
 FROM color_a a1 INNER JOIN color_a a2
 ON a1.color = a2.color;
 ```
-
-| Color 1                                 | Color 2                                 |
-|-----------------------------------------|-----------------------------------------|
-| <font color="red">red</font>            | <font color="red">red</font>            |
-| <font color="darkorange">orange</font>  | <font color="darkorange">orange</font>  |
-| <font color="gold">yellow</font>        | <font color="gold">yellow</font>        |
-| <font color="limegreen">green</font>    | <font color="limegreen">green</font>    |
+![](images/table20.png)
 
 <br>
 
@@ -1498,6 +1059,7 @@ ON a1.color = a2.color;
 
 
 ```sql
+
 ```
 |     |     |
 |-----|-----|
@@ -1506,6 +1068,7 @@ ON a1.color = a2.color;
 <br>
 
 ```sql
+
 ```
 |     |     |
 |-----|-----|
@@ -1514,6 +1077,7 @@ ON a1.color = a2.color;
 <br>
 
 ```sql
+
 ```
 |     |     |
 |-----|-----|
@@ -1522,6 +1086,7 @@ ON a1.color = a2.color;
 <br>
 
 ```sql
+
 ```
 |     |     |
 |-----|-----|
@@ -1530,6 +1095,7 @@ ON a1.color = a2.color;
 <br>
 
 ```sql
+
 ```
 |     |     |
 |-----|-----|
@@ -1538,6 +1104,7 @@ ON a1.color = a2.color;
 <br>
 
 ```sql
+
 ```
 |     |     |
 |-----|-----|
@@ -1546,6 +1113,7 @@ ON a1.color = a2.color;
 <br>
 
 ```sql
+
 ```
 |     |     |
 |-----|-----|
@@ -1554,6 +1122,7 @@ ON a1.color = a2.color;
 <br>
 
 ```sql
+
 ```
 |     |     |
 |-----|-----|
@@ -1562,6 +1131,7 @@ ON a1.color = a2.color;
 <br>
 
 ```sql
+
 ```
 |     |     |
 |-----|-----|
@@ -1570,6 +1140,7 @@ ON a1.color = a2.color;
 <br>
 
 ```sql
+
 ```
 |     |     |
 |-----|-----|
