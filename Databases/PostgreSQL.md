@@ -46,11 +46,13 @@
       - [FULL OUTER JOIN](#full-outer-join)
       - [FULL OUTER JOIN - only rows unique to both tables](#full-outer-join---only-rows-unique-to-both-tables)
       - [Self join](#self-join)
+      - [CROSS JOIN](#cross-join)
       - [Summary](#summary)
   * [PostgreSQL CLI commands](#postgresql-cli-commands)
 - [References](#references)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
 
 # PostgreSQL installation on Linux
 
@@ -1033,6 +1035,82 @@ WHERE color_a.id IS NULL OR color_b.id IS NULL;
 
 <br>
 
+The following example tables show employees and departments. Each department can have *zero or more employees*, and each employee belongs to *zero or one* department:
+
+<div>
+    <div style="float: left">
+        <table>
+            <tr><th>department_id</th><th>department_name</th></tr>
+            <tr><td>1</td><td>Sales</td></tr>
+            <tr><td>2</td><td>Marketing</td></tr>
+            <tr><td>3</td><td>HR</td></tr>
+            <tr><td>4</td><td>IT</td></tr>
+            <tr><td>5</td><td>Production</td></tr>
+        </table>
+    </div>
+    <div style="float: left; width: 3em">
+        &nbsp;
+    </div>
+    <div style="float: left">
+        <table>
+            <tr><th>employee_id</th><th>employee_name</th><th>department_id</th></tr>
+            <tr><td>1</td><td>Bette Nicholson</td><td>1</td></tr>
+            <tr><td>2</td><td>Christian Gable</td><td>1</td></tr>
+            <tr><td>3</td><td>Joe Swank</td><td>2</td></tr>
+            <tr><td>4</td><td>Fred Costner</td><td>3</td></tr>
+            <tr><td>5</td><td>Sandra Kilmer</td><td>4</td></tr>
+            <tr><td>6</td><td>Julia Mcqueen</td><td>[null]</td></tr>
+        </table>
+    </div>
+</div>
+
+<br clear="all">
+
+To have an overview of the `employee` &harr; `department` relationships we can use the following query:
+
+```sql
+SELECT employee_name, department_name
+FROM employees e FULL JOIN departments d
+ON d.department_id = e.department_id;
+```
+|  employee_name  | department_name |
+|-----------------|-----------------|
+| Bette Nicholson | Sales           |
+| Christian Gable | Sales           |
+| Joe Swank       | Marketing       |
+| Fred Costner    | HR              |
+| Sandra Kilmer   | IT              |
+| Julia Mcqueen   | *[null]*        |
+| *[null]*        | Production      |
+
+<br>
+
+To find the department that doen not have any employees we can use the following query:
+
+```sql
+SELECT employee_name, department_name
+FROM employees e FULL JOIN departments d
+ON d.department_id = e.department_id
+WHERE employee_name IS NULL;
+```
+|  employee_name  | department_name |
+|-----------------|-----------------|
+| *[null]*        | Production      |
+
+<br>
+
+And to find the employee that does not belong to any department:
+
+```sql
+SELECT employee_name, department_name
+FROM employees e FULL JOIN departments d
+ON d.department_id = e.department_id
+WHERE department_name IS NULL;
+```
+|  employee_name  | department_name |
+|-----------------|-----------------|
+| Julia Mcqueen   | *[null]*        |
+
 #### Self join
 
 ```sql
@@ -1044,37 +1122,222 @@ ON a1.color = a2.color;
 
 <br>
 
+Self joins can be used to <u>*query hierarchical data*</u>, for example.
+
+Supposing the following employee hierarchy in an organization:
+
+```
+                              ┌───────┐
+                              │ Windy │
+                              │ Hays  │
+                              └───┬───┘
+                  ┌───────────────┴─────────────────┐
+              ┌───┴────┐                     ┌──────┴──────┐
+              │ Hassan │                     │     Ava     │
+              │ Conner │                     │ Christensen │
+              └───┬────┘                     └──────┬──────┘
+    ┌─────────────┼────────────┐            ┌───────┴─────┐
+┌───┴────┐    ┌───┴────┐    ┌──┴───┐    ┌───┴────┐    ┌───┴────┐
+│ Salley │    │ Kelsie │    │ Tory │    │  Sau   │    │  Anna  │
+│ Lester │    │  Hays  │    │ Goff │    │ Norman │    │ Reeves │
+└────────┘    └────────┘    └──────┘    └────────┘    └────────┘
+```
+
+We could have the following `employee` table:
+
+| employee_id | first_name |  last_name  | manager_id |
+|-------------|------------|-------------|------------|
+|           1 | Windy      | Hays        |     [null] |
+|           2 | Ava        | Christensen |          1 |
+|           3 | Hassan     | Conner      |          1 |
+|           4 | Anna       | Reeves      |          2 |
+|           5 | Sau        | Norman      |          2 |
+|           6 | Kelsie     | Hays        |          3 |
+|           7 | Tory       | Goff        |          3 |
+|           8 | Salley     | Lester      |          3 |
+
+In this table, the `manager_id` column references the `employee_id` column.
+
+It brings the id of the manager the employee reports too.
+
+Windy Hays is the top manager and reports to nobody.
+
+<br>
+
+The following *self join* query shows who reports to whom:
+
+```sql
+SELECT   e.first_name || ' ' || e.last_name AS employee,
+	     m.first_name || ' ' || m.last_name AS manager
+
+FROM     employee e INNER JOIN employee m
+ON       e.manager_id = m.employee_id
+
+ORDER BY manager;
+```
+
+|    employee     |     manager     |
+|-----------------|-----------------|
+| Sau Norman      | Ava Christensen |
+| Anna Reeves     | Ava Christensen |
+| Salley Lester   | Hassan Conner   |
+| Kelsie Hays     | Hassan Conner   |
+| Tory Goff       | Hassan Conner   |
+| Ava Christensen | Windy Hays      |
+| Hassan Conner   | Windy Hays      |
+
+<br>
+
+To show the top manager, we can use `LEFT JOIN` instead of `INNER JOIN`:
+
+```sql
+SELECT   e.first_name || ' ' || e.last_name AS employee,
+	     m.first_name || ' ' || m.last_name AS manager
+
+FROM     employee e LEFT JOIN employee m
+ON       e.manager_id = m.employee_id
+
+ORDER BY manager;
+```
+|    employee     |     manager     |
+|-----------------|-----------------|
+| Sau Norman      | Ava Christensen |
+| Anna Reeves     | Ava Christensen |
+| Salley Lester   | Hassan Conner   |
+| Kelsie Hays     | Hassan Conner   |
+| Tory Goff       | Hassan Conner   |
+| Ava Christensen | Windy Hays      |
+| Hassan Conner   | Windy Hays      |
+| Windy Hays      | [null]          |
+
+<br>
+
+Self joins can be also used to <u>*compare rows with the same table*</u>.
+
+Taking the `film` table from the `dvd rental` database as an example:
+
+```
+┌──────────────────────┐
+│         film         │
+├──────────────────────┤
+│ * film_id            │
+│   title              │
+│   description        │
+│   release_year       │
+│   language_id        │
+│   rental_duration    │
+│   rental_rate        │
+│   lenght             │
+│   replacement_cost   │
+│   rating             │
+│   last_update        │
+│   special_features   │
+│   fulltext           │
+└──────────────────────┘
+```
+
+We can use the following query to find pairs of films that have the same length:
+
+```sql
+SELECT f1.title, f2.title, f1.length
+FROM film f1 INNER JOIN film f2
+ON f1.film_id != f2.film_id AND f1.length = f2.length;
+```
+|      title       |         title          | legnth |
+|------------------|------------------------|--------|
+| Chamber Italian  | Resurrection Silverado |    117 |
+| Chamber Italian  | Magic Mallrats         |    117 |
+| Chamber Italian  | Graffiti Love          |    117 |
+| Chamber Italian  | Affair Prejudice       |    117 |
+| Grosse Wonderful | Hurricane Affair       |     49 |
+| Grosse Wonderful | Hook Chariots          |     49 |
+| Grosse Wonderful | Heavenly Gun           |     49 |
+| Grosse Wonderful | Doors President        |     49 |
+| Airport Pollock  | Sense Greek            |     54 |
+| Airport Pollock  | October Submarine      |     54 |
+| . . .            | . . .                  | . . .  |
+
+
+#### CROSS JOIN
+
+Taking the `T1` and `T2` tables below as an example:
+
+<div>
+    <div style="float: left">
+        <h4 align="center">T1</h4>
+        <table>
+            <tr><th>label</th></tr>
+            <tr><td>A</td></tr>
+            <tr><td>B</td></tr>
+        </table>
+    </div>
+    <div style="float: left; width: 3em">
+        &nbsp;
+    </div>
+    <div style="float: left">
+        <h4 align="center">T2</h4>
+        <table>
+            <tr><th>score</th></tr>
+            <tr><td>1</td></tr>
+            <tr><td>2</td></tr>
+            <tr><td>3</td></tr>
+        </table>
+    </div>
+</div>
+
+<br clear="all">
+
+We can use the `CROSS JOIN` to produce the *cartesian product* of two or more tables, as shown in the illustration below:
+
+![](images/cartesian.png)
+
+
+The SQL query is as simple as:
+
+```sql
+SELECT *
+FROM T1 CROSS JOIN T2;
+```
+| label | score |
+|-------|-------|
+| A     |     1 |
+| B     |     1 |
+| A     |     2 |
+| B     |     2 |
+| A     |     3 |
+| B     |     3 |
+
+<br>
+
+The following queries are equivalent:
+
+```sql
+SELECT *
+FROM T1 CROSS JOIN T2;
+```
+```sql
+SELECT *
+FROM T1, T2;
+```
+```sql
+SELECT *
+FROM T1 INNER JOIN T2
+ON true;
+```
+<br>
+
 #### Summary
 
-|                                       |                                                                                                                                                                    |
-|---------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| ![](images/inner_join.png)            | <tt>**SELECT** *</tt> <br> <tt>**FROM** a **INNER JOIN** b</tt> <br> <tt>**ON** a.key = b.key;</tt>                                                                |
-| ![](images/left_join.png)             | <tt>**SELECT** *</tt> <br> <tt>**FROM** a **LEFT JOIN** b</tt> <br> <tt>**ON** a.key = b.key;</tt>                                                                 |
-| ![](images/left_join_left_only.png)   | <tt>**SELECT** *</tt> <br> <tt>**FROM** a **LEFT JOIN** b</tt> <br> <tt>**ON** a.key = b.key</tt> <br> <tt>**WHERE** b.key **IS NULL**;</tt>                       |
-| ![](images/right_join.png)            | <tt>**SELECT** *</tt> <br> <tt>**FROM** a **RIGHT JOIN** b</tt> <br> <tt>**ON** a.key = b.key;</tt>                                                                |
-| ![](images/right_join_right_only.png) | <tt>**SELECT** *</tt> <br> <tt>**FROM** a **RIGHT JOIN** b</tt> <br> <tt>**ON** a.key = b.key</tt> <br> <tt>**WHERE** a.key **IS NULL**;</tt>                      |
-| ![](images/full_join.png)             | <tt>**SELECT** *</tt> <br> <tt>**FROM** a **FULL JOIN** b</tt> <br> <tt>**ON** a.key = b.key;</tt>                                                                 |
-| ![](images/full_join_unique.png)      | <tt>**SELECT** *</tt> <br> <tt>**FROM** a **FULL JOIN** b</tt> <br> <tt>**ON** a.key = b.key</tt>  <br> <tt>**WHERE** a.key **IS NULL OR** b.key **IS NULL**;</tt> |
-
-
-
-```sql
-
-```
-|     |     |
-|-----|-----|
-|     |     |
-
-<br>
-
-```sql
-
-```
-|     |     |
-|-----|-----|
-|     |     |
-
-<br>
+|                                              |                                                                                                                                                                    |
+|----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| &emsp; ![](images/inner_join.png)            | <tt>**SELECT** *</tt> <br> <tt>**FROM** a **INNER JOIN** b</tt> <br> <tt>**ON** a.key = b.key;</tt>                                                                |
+| &emsp; ![](images/left_join.png)             | <tt>**SELECT** *</tt> <br> <tt>**FROM** a **LEFT JOIN** b</tt> <br> <tt>**ON** a.key = b.key;</tt>                                                                 |
+| &emsp; ![](images/left_join_left_only.png)   | <tt>**SELECT** *</tt> <br> <tt>**FROM** a **LEFT JOIN** b</tt> <br> <tt>**ON** a.key = b.key</tt> <br> <tt>**WHERE** b.key **IS NULL**;</tt>                       |
+| &emsp; ![](images/right_join.png)            | <tt>**SELECT** *</tt> <br> <tt>**FROM** a **RIGHT JOIN** b</tt> <br> <tt>**ON** a.key = b.key;</tt>                                                                |
+| &emsp; ![](images/right_join_right_only.png) | <tt>**SELECT** *</tt> <br> <tt>**FROM** a **RIGHT JOIN** b</tt> <br> <tt>**ON** a.key = b.key</tt> <br> <tt>**WHERE** a.key **IS NULL**;</tt>                      |
+| &emsp; ![](images/full_join.png)             | <tt>**SELECT** *</tt> <br> <tt>**FROM** a **FULL JOIN** b</tt> <br> <tt>**ON** a.key = b.key;</tt>                                                                 |
+| &emsp; ![](images/full_join_unique.png)      | <tt>**SELECT** *</tt> <br> <tt>**FROM** a **FULL JOIN** b</tt> <br> <tt>**ON** a.key = b.key</tt>  <br> <tt>**WHERE** a.key **IS NULL OR** b.key **IS NULL**;</tt> |
+| ![](images/cartesian_mini.png)               | <tt>**SELECT** *</tt> <br> <tt>**FROM** a **CROSS JOIN** b;</tt>                                                                                                   |
 
 ```sql
 
