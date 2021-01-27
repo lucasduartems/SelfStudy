@@ -2213,23 +2213,96 @@ FROM products NATURAL [INNER|LEFT|RIGHT] JOIN categories;
 | &emsp; ![](images/full_join_unique.png)      | <tt>**SELECT** *</tt> <br> <tt>**FROM** a **FULL JOIN** b</tt> <br> <tt>**ON** a.key = b.key</tt>  <br> <tt>**WHERE** a.key **IS NULL OR** b.key **IS NULL**;</tt> |
 | ![](images/cartesian_mini.png)               | <tt>**SELECT** *</tt> <br> <tt>**FROM** a **CROSS JOIN** b;</tt>                                                                                                   |
 
-```sql
+### Subqueries
 
 ```
-|     |     |
-|-----|-----|
-|     |     |
+┌────────────────────┐  ┌────────────────┐  ┌────────────────┐
+│        film        │  │   inventory    │  │     rental     │
+├────────────────────┤  ├────────────────┤  ├────────────────┤
+│ * film_id          │  │ * inventory_id │  │ * rental_id    │
+│   title            │  │   film_id      │  │   rental_date  │
+│   description      │  │   store_id     │  │   inventory_id │
+│   release_year     │  │   last_update  │  │   customer_id  │
+│   language_id      │  └────────────────┘  │   return_date  │
+│   rental_duration  │                      │   staff_id     │
+│   rental_rate      │                      │   last_update  │
+│   length           │                      └────────────────┘
+│   replacement_cost │
+│   rating           │
+│   last_update      │
+│   special_features │
+│   fulltext         │
+└────────────────────┘
+```
 
 <br>
 
 ```sql
+-- Films with rental_rate above average
 
+SELECT film_id, title, rental_rate
+FROM film
+WHERE rental_rate > (
+	SELECT AVG(rental_rate) 
+	FROM film
+)
 ```
-|     |     |
-|-----|-----|
-|     |     |
+| film_id |       title       | rental_rate |
+|---------|-------------------|-------------|
+|     133 | Chamber Italian   |        4.99 |
+|     384 | Grosse Wonderful  |        4.99 |
+|       8 | Airport Pollock   |        4.99 |
+|      98 | Bright Encounters |        4.99 |
+|       2 | Ace Goldfinger    |        4.99 |
+|       3 | Adaptation Holes  |        2.99 |
+|       4 | Affair Prejudice  |        2.99 |
+| . . .   | . . .             | . . .       |
+
 
 <br>
+
+```sql
+-- Films returned between 2005-05-29 and 2005-05-30
+SELECT film_id, title
+FROM film 
+WHERE film_id IN (
+	SELECT inventory.film_id 
+	FROM rental INNER JOIN inventory
+	ON inventory.inventory_id = rental.inventory_id
+	WHERE return_date BETWEEN '2005-05-29' AND '2005-05-30'
+);
+```
+| film_id |       title       |
+|---------|-------------------|
+|     307 | Fellowship Autumn |
+|     255 | Driving Polish    |
+|     388 | Gunfight Moon     |
+|     130 | Celebrity Horn    |
+|     563 | Massacre Usual    |
+| . . .   | . . .             |
+
+<br>
+
+#### EXISTS
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ```sql
 
