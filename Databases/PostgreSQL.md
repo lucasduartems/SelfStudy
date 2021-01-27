@@ -34,6 +34,17 @@
       - [OFFSET](#offset)
       - [Top/bottom rows](#top-bottom-rows)
     + [FETCH](#fetch)
+    + [GROUP BY](#group-by)
+      - [Aggregate functions](#aggregate-functions)
+      - [HAVING](#having)
+    + [Combining result sets](#combining-result-sets)
+      - [UNION](#union)
+      - [INTERSECT](#intersect)
+      - [EXCEPT](#except)
+      - [GROUPING SETS](#grouping-sets)
+      - [GROUPING](#grouping)
+      - [CUBE](#cube)
+      - [ROLLUP](#rollup)
     + [JOIN](#join)
       - [INNER JOIN](#inner-join)
         * [Table alias](#table-alias)
@@ -47,6 +58,7 @@
       - [FULL OUTER JOIN - only rows unique to both tables](#full-outer-join---only-rows-unique-to-both-tables)
       - [Self join](#self-join)
       - [CROSS JOIN](#cross-join)
+      - [NATURAL JOIN](#natural-join)
       - [Summary](#summary)
   * [PostgreSQL CLI commands](#postgresql-cli-commands)
 - [References](#references)
@@ -266,7 +278,6 @@ FROM     table
 ORDER BY sort_expression
 ```
 
-<br>
 <br>
 
 Order of evaluation:
@@ -790,6 +801,833 @@ Again, `FETCH` should always be used together with `ORDER BY`, as *rows are stor
 
 <br>
 
+### GROUP BY
+
+```sql
+SELECT   columns
+FROM     table
+GROUP BY columns
+```
+
+<br>
+
+Order of evaluation:
+
+```
+  ┌──────────┐
+  │   FROM   │
+  └──────────┘
+       ↓
+  ┌──────────┐
+  │  WHERE   │
+  └──────────┘
+       ↓
+  ╔══════════╗
+  ║ GROUP BY ║
+  ╚══════════╝
+       ↓
+  ┌──────────┐
+  │  HAVING  │
+  └──────────┘
+       ↓
+  ┌──────────┐
+  │  SELECT  │
+  └──────────┘
+       ↓
+  ┌──────────┐
+  │ DISTINCT │
+  └──────────┘
+       ↓
+  ┌──────────┐
+  │ ORDER BY │
+  └──────────┘
+       ↓
+  ┌──────────┐
+  │  LIMIT   │
+  └──────────┘
+```
+
+<br>
+
+```sql
+SELECT customer_id 
+FROM payment
+GROUP BY customer_id
+```
+| customer_id |
+|-------------|
+|         184 |
+|          87 |
+|         477 |
+|         273 |
+|         550 |
+|. . .        |
+
+<br>
+
+The qeury above works like the `DISINCT` clause, as it removes any duplicate `customer_id`s.
+
+#### Aggregate functions
+
+```sql
+SELECT customer_id, SUM(amount) 
+FROM payment
+GROUP BY customer_id;
+```
+| customer_id |  sum   |
+|-------------|--------|
+|         184 |  80.80 |
+|          87 | 137.72 |
+|         477 | 106.79 |
+|         273 | 130.72 |
+|         550 | 151.69 |
+|. . .        |. . .   |
+
+<br>
+
+```sql
+SELECT customer_id, SUM(amount) 
+FROM payment
+GROUP BY customer_id
+ORDER BY SUM(amount) DESC;
+```
+| customer_id |  sum   |
+|-------------|--------|
+|         148 | 211.55 |
+|         526 | 208.58 |
+|         178 | 194.61 |
+|         137 | 191.62 |
+|         144 | 189.60 |
+|. . .        |. . .   |
+
+
+<br>
+
+```sql
+SELECT
+	first_name || ' ' || last_name AS full_name,
+	SUM(amount) AS total_spent
+
+FROM payment INNER JOIN customer
+USING (customer_id)
+
+GROUP BY full_name
+
+ORDER BY total_spent DESC;
+```
+|   full_name    | total_spent |
+|----------------|-------------|
+| Eleanor Hunt   |      211.55 |
+| Karl Seal      |      208.58 |
+| Marion Snyder  |      194.61 |
+| Rhonda Kennedy |      191.62 |
+| Clara Shaw     |      189.60 |
+|. . .           |. . .        |
+
+<br>
+
+For info on *joins* see the [JOIN](#join) section.
+
+<br>
+
+```sql
+SELECT staff_id, COUNT(payment_id) 
+FROM payment
+GROUP BY staff_id 
+```
+| staff_id | count |
+|----------|-------|
+|        1 |  7292 |
+|        2 |  7304 |
+
+<br>
+
+```sql
+SELECT customer_id, staff_id, SUM(amount) AS total_spent 
+FROM payment
+GROUP BY staff_id, customer_id
+ORDER BY customer_id;
+```
+| customer_id | staff_id | total_spent |
+|-------------|----------|-------------|
+|           1 |        2 |       53.85 |
+|           1 |        1 |       60.85 |
+|           2 |        2 |       67.88 |
+|           2 |        1 |       55.86 |
+|           3 |        1 |       59.88 |
+|           3 |        2 |       70.88 |
+|           4 |        2 |       31.90 |
+|           4 |        1 |       49.88 |
+| . . .       | . . .    | . . .       |
+
+<br>
+
+In the query above, `total_spent` is calculated for every <u>*`(customer_id, staff_id)`</u>* pair.
+
+<br>
+
+```sql
+SELECT DATE(payment_date), sum(amount) 
+FROM payment
+GROUP BY DATE(payment_date)
+ORDER BY DATE(payment_date);
+```
+|    date    |   sum   |
+|------------|---------|
+| 2007-02-14 |  116.73 |
+| 2007-02-15 | 1188.92 |
+| 2007-02-16 | 1154.18 |
+| 2007-02-17 | 1188.17 |
+| 2007-02-18 | 1275.98 |
+| . . .      | . . .   |
+
+#### HAVING
+
+```sql
+SELECT   columns
+FROM     table
+GROUP BY columns
+HAVING   conditions
+```
+
+<br>
+
+Order of evaluation:
+
+```
+  ┌──────────┐
+  │   FROM   │
+  └──────────┘
+       ↓
+  ┌──────────┐
+  │  WHERE   │
+  └──────────┘
+       ↓
+  ┌──────────┐
+  │ GROUP BY │
+  └──────────┘
+       ↓
+  ╔══════════╗
+  ║  HAVING  ║
+  ╚══════════╝
+       ↓
+  ┌──────────┐
+  │  SELECT  │
+  └──────────┘
+       ↓
+  ┌──────────┐
+  │ DISTINCT │
+  └──────────┘
+       ↓
+  ┌──────────┐
+  │ ORDER BY │
+  └──────────┘
+       ↓
+  ┌──────────┐
+  │  LIMIT   │
+  └──────────┘
+```
+
+<br>
+
+While [`WHERE`](#where) allows us to filter *<u>rows</u>*, `HAVING` allows us to filter *<u>groups of rows</u>*:
+
+```sql
+SELECT customer_id, SUM(amount)
+FROM payment
+GROUP BY customer_id
+HAVING SUM(amount) >= 200;
+```
+| customer_id |  sum   |
+|-------------|--------|
+|         526 | 208.58 |
+|         148 | 211.55 |
+
+<br>
+
+The query above calculates the total amount each customer has spent and ignores the amounts smaller than $200.
+
+<br>
+
+```sql
+SELECT store_id, count(customer_id) 
+FROM customer
+GROUP BY store_id
+HAVING count(customer_id) > 300; 
+```
+
+<br>
+
+The query above selects the store with more than 300 customers.
+
+### Combining result sets
+
+#### UNION
+
+Taking the two tables below as an example:
+
+```
+               top_rated_films                            most_popular_films
+┌──────────────────────────┬────────────────┐    ┌────────────────────┬──────────────┐
+│          title           │  release_year  │    │       title        │ release_year │
+├──────────────────────────┼────────────────┤    ├────────────────────┼──────────────┤
+│ The Shawshank Redemption │           1994 │    │ An American Pickle │         2020 │
+│ The Godfather            │           1972 │    │ The Godfather      │         1972 │
+│ "12 Angry Men"           │           1957 │    │ Greyhound          │         2020 │
+└──────────────────────────┴────────────────┘    └────────────────────┴──────────────┘
+```
+
+<br>
+
+We can combine the results of both tables, if the *<u>number and order</u>* of the columns are the same and the *<u>data types</u>* are compatible:
+
+![](images/full_join.png)
+```sql
+SELECT *
+FROM top_rated_films
+
+UNION
+
+SELECT *
+FROM most_popular_films;
+```
+|          title           | release_year |
+|--------------------------|--------------|
+| An American Pickle       |         2020 |
+| Greyhound                |         2020 |
+| The Shawshank Redemption |         1994 |
+| The Godfather            |         1972 |
+| 12 Angry Men             |         1957 |
+
+<br>
+
+To keep duplicates:
+
+```sql
+SELECT *
+FROM top_rated_films
+
+UNION ALL
+
+SELECT *
+FROM most_popular_films;
+```
+|          title           | release_year |
+|--------------------------|--------------|
+| The Shawshank Redemption |         1994 |
+| The Godfather            |         1972 |
+| 12 Angry Men             |         1957 |
+| An American Pickle       |         2020 |
+| The Godfather            |         1972 |
+| Greyhound                |         2020 |
+
+<br>
+
+```sql
+SELECT *
+FROM top_rated_films
+
+UNION ALL
+
+SELECT *
+FROM most_popular_films
+
+ORDER BY title;
+```
+|          title           | release_year |
+|--------------------------|--------------|
+| 12 Angry Men             |         1957 |
+| An American Pickle       |         2020 |
+| Greyhound                |         2020 |
+| The Godfather            |         1972 |
+| The Godfather            |         1972 |
+| The Shawshank Redemption |         1994 |
+
+<br>
+
+#### INTERSECT
+
+Taking the `top_rated_films` and `most_popular_films` tables as an example once again:
+
+```
+               top_rated_films                            most_popular_films
+┌──────────────────────────┬────────────────┐    ┌────────────────────┬──────────────┐
+│          title           │  release_year  │    │       title        │ release_year │
+├──────────────────────────┼────────────────┤    ├────────────────────┼──────────────┤
+│ The Shawshank Redemption │           1994 │    │ An American Pickle │         2020 │
+│ The Godfather            │           1972 │    │ The Godfather      │         1972 │
+│ "12 Angry Men"           │           1957 │    │ Greyhound          │         2020 │
+└──────────────────────────┴────────────────┘    └────────────────────┴──────────────┘
+```
+
+<br>
+
+We can once combine the results of [`SELECT`](#select) statements (if the *<u>number and order</u>* of the columns are the same and the *<u>data types</u>* are compatible) and *keep only the rows available in both* result sets:
+
+![](images/inner_join.png)
+```sql
+SELECT *
+FROM top_rated_films
+
+INTERSECT
+
+SELECT *
+FROM most_popular_films;
+```
+|          title           | release_year |
+|--------------------------|--------------|
+| The Godfather            |         1972 |
+
+#### EXCEPT
+
+Just as the previous [`UNION`](#union) and [`INTERSECT`](#intersect) clauses, we can also use `EXCEPT` to combine [`SELECT`](#select) statements if the *<u>number and order</u>* of the columns are the same and the *<u>data types</u>* are compatible.
+
+`EXCEPT` keeps only distinct rows that are present in the first query and not present in the second one.
+
+Using the same film tables once again:
+
+```
+               top_rated_films                            most_popular_films
+┌──────────────────────────┬────────────────┐    ┌────────────────────┬──────────────┐
+│          title           │  release_year  │    │       title        │ release_year │
+├──────────────────────────┼────────────────┤    ├────────────────────┼──────────────┤
+│ The Shawshank Redemption │           1994 │    │ An American Pickle │         2020 │
+│ The Godfather            │           1972 │    │ The Godfather      │         1972 │
+│ "12 Angry Men"           │           1957 │    │ Greyhound          │         2020 │
+└──────────────────────────┴────────────────┘    └────────────────────┴──────────────┘
+```
+
+<br>
+
+We can combine them using `EXCEPT`:
+
+![](images/left_join_left_only.png)
+```sql
+SELECT *
+FROM top_rated_films
+
+EXCEPT
+
+SELECT *
+FROM most_popular_films
+
+ORDER BY title;
+```
+|          title           | release_year |
+|--------------------------|--------------|
+| 12 Angry Men             |         1957 |
+| The Shawshank Redemption |         1994 |
+
+<br>
+
+#### GROUPING SETS
+
+For this section we will take the following `sales` table as ane example:
+
+| brand | segment | quantity |
+|-------|---------|----------|
+| ABC   | Premium |      100 |
+| ABC   | Basic   |      200 |
+| XYZ   | Premium |      100 |
+| XYZ   | Basic   |      300 |
+
+
+<br>
+
+The queries shown below correspond to:
+
+ - Products sold by `brand, segment` combinations;
+ - Products sold by `brand`;
+ - Products sold by `segment`;
+ - Number of products sold;
+
+```sql
+-- Products sold by (brand, segment) combinations
+
+SELECT brand, segment, SUM(quantity)
+FROM sales
+GROUP BY brand, segment;
+```
+| brand | segment | sum |
+|-------|---------|-----|
+| XYZ   | Basic   | 300 |
+| ABC   | Premium | 100 |
+| ABC   | Basic   | 200 |
+| XYZ   | Premium | 100 |
+
+<br>
+
+```sql
+-- Products sold by brand
+
+SELECT brand, SUM(quantity)
+FROM sales
+GROUP BY brand;
+```
+| brand | sum |
+|-------|-----|
+| ABC   | 300 |
+| XYZ   | 400 |
+
+
+<br>
+
+```sql
+-- Products sold by segment
+
+SELECT segment, SUM(quantity)
+FROM sales
+GROUP BY segment;
+```
+| segment | sum |
+|---------|-----|
+| Basic   | 500 |
+| Premium | 200 |
+
+<br>
+
+```sql
+-- Number of products sold
+SELECT SUM(quantity)
+FROM sales;
+```
+| sum |
+|-----|
+| 700 |
+
+<br>
+
+We could combine the four result sets above by using `UNION ALL` clauses:
+
+```sql
+SELECT brand, segment, SUM(quantity)
+FROM sales
+GROUP BY brand, segment
+
+UNION ALL
+
+SELECT brand, NULL, SUM(quantity)
+FROM sales
+GROUP BY brand
+
+UNION ALL
+
+SELECT NULL, segment, SUM(quantity)
+FROM sales
+GROUP BY segment
+
+UNION ALL 
+
+SELECT NULL, NULL, SUM(quantity)
+FROM sales
+```
+| brand  | segment | sum |
+|--------|---------|-----|
+| XYZ    | Basic   | 300 |
+| ABC    | Premium | 100 |
+| ABC    | Basic   | 200 |
+| XYZ    | Premium | 100 |
+| ABC    | [null]  | 300 |
+| XYZ    | [null]  | 400 |
+| [null] | Basic   | 500 |
+| [null] | Premium | 200 |
+| [null] | [null]  | 700 |
+
+<br>
+
+The query shown above is quite big. It could be rewritten with `GROUPING SETS`, which is more readable and has an optimized execution performance:
+
+```sql
+SELECT brand, segment, SUM(quantity)
+FROM sales
+GROUP BY GROUPING SETS ((brand, segment), (brand), (segment), ());
+```
+| brand  | segment | sum |
+|--------|---------|-----|
+| [null] | [null]  | 700 |
+| XYZ    | Basic   | 300 |
+| ABC    | Premium | 100 |
+| ABC    | Basic   | 200 |
+| XYZ    | Premium | 100 |
+| ABC    | [null]  | 300 |
+| XYZ    | [null]  | 400 |
+| [null] | Basic   | 500 |
+| [null] | Premium | 200 |
+
+#### GROUPING
+
+Taking the `sales` table as an example once again:
+
+| brand | segment | quantity |
+|-------|---------|----------|
+| ABC   | Premium |      100 |
+| ABC   | Basic   |      200 |
+| XYZ   | Premium |      100 |
+| XYZ   | Basic   |      300 |
+
+<br>
+
+```sql
+SELECT
+	GROUPING(brand) AS grp_brand,
+	GROUPING(segment) AS grp_segment,
+	brand,
+	segment,
+	SUM(quantity)
+FROM sales
+GROUP BY GROUPING SETS ((brand), (segment), ())
+ORDER BY brand, segment;
+```
+| grp_brand | grp_segment | brand  | segment | sum |
+|-----------|-------------|--------|---------|-----|
+|         0 |           1 | ABC    | [null]  | 300 |
+|         0 |           1 | XYZ    | [null]  | 400 |
+|         1 |           0 | [null] | Basic   | 500 |
+|         1 |           0 | [null] | Premium | 200 |
+|         1 |           1 | [null] | [null]  | 700 |
+
+<br>
+
+We can see from the example above that `GROUPING` is a function that returns:
+
+ - `0` if the argument is a member of the current grouping set;
+ - `1` otherwise;
+
+<br>
+
+We could add a `HAVING` clause to the query to find the *subtotal* of each brand:
+
+```sql
+SELECT
+	GROUPING(brand) AS grp_brand,
+	GROUPING(segment) AS grp_segment,
+	brand,
+	segment,
+	SUM(quantity)
+FROM sales
+GROUP BY GROUPING SETS ((brand), (segment), ())
+HAVING GROUPING(brand) = 0
+ORDER BY brand, segment;
+```
+| grp_brand | grp_segment | brand  | segment | sum |
+|-----------|-------------|--------|---------|-----|
+|         0 |           1 | ABC    | [null]  | 300 |
+|         0 |           1 | XYZ    | [null]  | 400 |
+
+#### CUBE
+
+`CUBE` generates *all possible [GROUPING SETS](#grouping-sets)* for the specified columns.
+
+The following statements are equivalent:
+
+```sql
+CUBE(a, b, c)
+
+GROUPING SETS ((a, b, c), (a, b), (a, c), (b, c), (a), (b), (c), ())
+```
+
+<br>
+
+The examples in this section will use the `sales` table below as example once again:
+
+| brand | segment | quantity |
+|-------|---------|----------|
+| ABC   | Premium |      100 |
+| ABC   | Basic   |      200 |
+| XYZ   | Premium |      100 |
+| XYZ   | Basic   |      300 |
+
+<br>
+
+```sql
+SELECT brand, segment, SUM (quantity)
+FROM sales
+GROUP BY CUBE (brand, segment)
+ORDER BY brand, segment;
+```
+| brand  | segment | sum |
+|--------|---------|-----|
+| ABC    | Basic   | 200 |
+| ABC    | Premium | 100 |
+| ABC    | [null]  | 300 |
+| XYZ    | Basic   | 300 |
+| XYZ    | Premium | 100 |
+| XYZ    | [null]  | 400 |
+| [null] | Basic   | 500 |
+| [null] | Premium | 200 |
+| [null] | [null]  | 700 |
+
+We can identify the groups generate by `CUBE` in the results above: `(brand, segment)`, `(brand)`, `(segment)`, `()`.
+
+<br>
+
+```sql
+SELECT brand, segment, SUM (quantity)
+FROM sales
+GROUP BY brand, CUBE (segment)
+ORDER BY brand, segment;
+```
+| brand  | segment | sum |
+|--------|---------|-----|
+| ABC    | Basic   | 200 |
+| ABC    | Premium | 100 |
+| ABC    | [null]  | 300 |
+| XYZ    | Basic   | 300 |
+| XYZ    | Premium | 100 |
+| XYZ    | [null]  | 400 |
+
+The query above shows a *partial* `CUBE`.
+
+For each `brand` (`ABC`, `XYZ`) we cann see all the possible values of `segment` (`Basic`, `Premium`, `null`).
+
+#### ROLLUP
+
+`ROLLUP` is similar to [`CUBE`](#cube), as it also generates [`GROUPING SETS`](#grouping-sets).
+
+However, `ROLLUP` does not generate all possible [`GROUPING SETS`](#grouping-sets), but *<u>assumes a hierarchy</u>* among the specified columns:
+
+```sql
+CUBE(a, b, c)  →  (a, b, c)                 ROLLUP(a, b, c)  →  (a, b, c)
+                  (a, b)                                        (a, b)
+                  (a, c)                                        (a)
+                  (b, c)                                        ()
+                  (a)
+                  (b)
+                  (c)
+                  ()
+```
+
+<br>
+
+This way, `ROLLUP` can be used to *generate subtotals and grand totals* for reports.
+
+It can also be used to *calculate aggregations by year, month and date*.
+
+<br>
+
+Using the `sales` table once again:
+
+| brand | segment | quantity |
+|-------|---------|----------|
+| ABC   | Premium |      100 |
+| ABC   | Basic   |      200 |
+| XYZ   | Premium |      100 |
+| XYZ   | Basic   |      300 |
+
+<br>
+
+```sql
+SELECT brand, segment, SUM (quantity)
+FROM sales
+GROUP BY ROLLUP (brand, segment)
+ORDER BY brand, segment;
+```
+| brand  | segment | sum |
+|--------|---------|-----|
+| ABC    | Basic   | 200 |
+| ABC    | Premium | 100 |
+| ABC    | [null]  | 300 |
+| XYZ    | Basic   | 300 |
+| XYZ    | Premium | 100 |
+| XYZ    | [null]  | 400 |
+| [null] | [null]  | 700 |
+
+In the example above the hirearchy is `brand > segment`.
+
+The 3<sup>rd</sup> row brings the total sales of brand `ABC`.
+
+The 6<sup>th</sup> row brings the total sales of brand `XYZ`.
+
+The 9<sup>th</sup> row brings the *grand total* for all brands.
+
+<br>
+
+Comparing with [`CUBE`](#cube):
+
+```sql
+SELECT                                      SELECT
+    brand,                                      brand,
+    segment,                                    segment,
+    SUM (quantity)                              SUM (quantity)
+
+FROM sales                                  FROM sales
+
+GROUP BY ROLLUP (brand, segment)            GROUP BY CUBE (brand, segment)
+
+ORDER BY brand, segment;                    ORDER BY brand, segment;
+
+
+┌────────┬─────────┬─────┐                  ┌────────┬─────────┬─────┐
+│ brand  │ segment │ sum │                  │ brand  │ segment │ sum │
+├────────┼─────────┼─────┤                  ├────────┼─────────┼─────┤
+│ ABC    │ Basic   │ 200 │                  │ ABC    │ Basic   │ 200 │
+│ ABC    │ Premium │ 100 │                  │ ABC    │ Premium │ 100 │
+│ ABC    │ [null]  │ 300 │                  │ ABC    │ [null]  │ 300 │
+│ XYZ    │ Basic   │ 300 │                  │ XYZ    │ Basic   │ 300 │
+│ XYZ    │ Premium │ 100 │                  │ XYZ    │ Premium │ 100 │
+│ XYZ    │ [null]  │ 400 │                  │ XYZ    │ [null]  │ 400 │
+│ [null] │ [null]  │ 700 │                  │ [null] │ Basic   │ 500 │
+└────────┴─────────┴─────┘                  │ [null] │ Premium │ 200 │
+                                            │ [null] │ [null]  │ 700 │
+                                            └────────┴─────────┴─────┘
+```
+
+<br>
+
+Taking the `rental` table from the `dvd rental` database as an example:
+
+```
+┌────────────────┐
+│     rental     │
+├────────────────┤
+│ * rental_id    │
+│   rental_rate  │
+│   inventory_id │
+│   customer_id  │
+│   return_date  │
+│   staff_id     │
+│   last_update  │
+└────────────────┘
+```
+
+<br>
+
+```sql
+SELECT 
+	EXTRACT (YEAR  FROM rental_date) AS y,
+	EXTRACT (MONTH FROM rental_date) AS m,
+	EXTRACT (DAY   FROM rental_date) AS d,
+	COUNT (rental_id)
+
+FROM rental
+
+GROUP BY ROLLUP (
+	EXTRACT (YEAR  FROM rental_date),
+	EXTRACT (MONTH FROM rental_date),
+	EXTRACT (DAY   FROM rental_date)
+)
+
+ORDER BY (
+	EXTRACT (YEAR  FROM rental_date),
+	EXTRACT (MONTH FROM rental_date),
+	EXTRACT (DAY   FROM rental_date)
+);
+```
+|   y   |     m |     d  | count |
+|-------|-------|--------|-------|
+| 2005  |     5 |    24  |     8 |
+| 2005  |     5 |    25  |   137 |
+| 2005  |     5 |    26  |   174 |
+| 2005  |     5 |    27  |   166 |
+| 2005  |     5 |    28  |   196 |
+| 2005  |     5 |    29  |   154 |
+| 2005  |     5 |    30  |   158 |
+| 2005  |     5 |    31  |   163 |
+| 2005  |     5 | [null] |  1156 |
+| 2005  |     6 |    14  |    16 |
+| 2005  |     6 |    15  |   348 |
+| . . . | . . . | . . .  | . . . |
+
 ### JOIN
 
 Joins are used to *combine tables* based on *common columns*.
@@ -1037,32 +1875,22 @@ WHERE color_a.id IS NULL OR color_b.id IS NULL;
 
 The following example tables show employees and departments. Each department can have *zero or more employees*, and each employee belongs to *zero or one* department:
 
-<div>
-    <div style="float: left">
-        <table>
-            <tr><th>department_id</th><th>department_name</th></tr>
-            <tr><td>1</td><td>Sales</td></tr>
-            <tr><td>2</td><td>Marketing</td></tr>
-            <tr><td>3</td><td>HR</td></tr>
-            <tr><td>4</td><td>IT</td></tr>
-            <tr><td>5</td><td>Production</td></tr>
-        </table>
-    </div>
-    <div style="float: left; width: 3em">
-        &nbsp;
-    </div>
-    <div style="float: left">
-        <table>
-            <tr><th>employee_id</th><th>employee_name</th><th>department_id</th></tr>
-            <tr><td>1</td><td>Bette Nicholson</td><td>1</td></tr>
-            <tr><td>2</td><td>Christian Gable</td><td>1</td></tr>
-            <tr><td>3</td><td>Joe Swank</td><td>2</td></tr>
-            <tr><td>4</td><td>Fred Costner</td><td>3</td></tr>
-            <tr><td>5</td><td>Sandra Kilmer</td><td>4</td></tr>
-            <tr><td>6</td><td>Julia Mcqueen</td><td>[null]</td></tr>
-        </table>
-    </div>
-</div>
+| department_id | department_name |
+|---------------|-----------------|
+|             1 | Sales           |
+|             2 | Marketing       |
+|             3 | HR              |
+|             4 | IT              |
+|             5 | Production      |
+
+| employee_id |  employee_name  | department_id |
+|-------------|-----------------|---------------|
+|           1 | Bette Nicholson | 1             |
+|           2 | Christian Gable | 1             |
+|           3 | Joe Swank       | 2             |
+|           4 | Fred Costner    | 3             |
+|           5 | Sandra Kilmer   | 4             |
+|           6 | Julia Mcqueen   | *[null]*      |
 
 <br clear="all">
 
@@ -1136,11 +1964,11 @@ Supposing the following employee hierarchy in an organization:
               │ Hassan │                     │     Ava     │
               │ Conner │                     │ Christensen │
               └───┬────┘                     └──────┬──────┘
-    ┌─────────────┼────────────┐            ┌───────┴─────┐
-┌───┴────┐    ┌───┴────┐    ┌──┴───┐    ┌───┴────┐    ┌───┴────┐
-│ Salley │    │ Kelsie │    │ Tory │    │  Sau   │    │  Anna  │
-│ Lester │    │  Hays  │    │ Goff │    │ Norman │    │ Reeves │
-└────────┘    └────────┘    └──────┘    └────────┘    └────────┘
+    ┌─────────────┼────────────┐             ┌──────┴──────┐
+┌───┴────┐    ┌───┴────┐    ┌──┴───┐     ┌───┴────┐    ┌───┴────┐
+│ Salley │    │ Kelsie │    │ Tory │     │  Sau   │    │  Anna  │
+│ Lester │    │  Hays  │    │ Goff │     │ Norman │    │ Reeves │
+└────────┘    └────────┘    └──────┘     └────────┘    └────────┘
 ```
 
 We could have the following `employee` table:
@@ -1262,30 +2090,16 @@ ON f1.film_id != f2.film_id AND f1.length = f2.length;
 
 Taking the `T1` and `T2` tables below as an example:
 
-<div>
-    <div style="float: left">
-        <h4 align="center">T1</h4>
-        <table>
-            <tr><th>label</th></tr>
-            <tr><td>A</td></tr>
-            <tr><td>B</td></tr>
-        </table>
-    </div>
-    <div style="float: left; width: 3em">
-        &nbsp;
-    </div>
-    <div style="float: left">
-        <h4 align="center">T2</h4>
-        <table>
-            <tr><th>score</th></tr>
-            <tr><td>1</td></tr>
-            <tr><td>2</td></tr>
-            <tr><td>3</td></tr>
-        </table>
-    </div>
-</div>
-
-<br clear="all">
+```  
+   T1           T2
+┌───────┐    ┌───────┐
+│ label │    │ score │
+├───────┤    ├───────┤
+│ A     │    │     1 │
+│ B     │    │     2 │
+└───────┘    │     3 │
+             └───────┘
+```
 
 We can use the `CROSS JOIN` to produce the *cartesian product* of two or more tables, as shown in the illustration below:
 
@@ -1325,6 +2139,66 @@ FROM T1 INNER JOIN T2
 ON true;
 ```
 <br>
+
+#### NATURAL JOIN
+
+Let's take the following `categories` and `products` tables below as an example:
+
+```
+          categories                                  products
+┌─────────────┬───────────────┐    ┌────────────┬─────────────────┬─────────────┐
+│ category_id │ category_name │    │ product_id │  product_name   │ category_id │
+├─────────────┼───────────────┤    ├────────────┼─────────────────┼─────────────┤
+│           1 │ Smart Phone   │    │          1 │ iPhone          │           1 │
+│           2 │ Laptop        │    │          2 │ Samsung Galaxy  │           1 │
+│           3 │ Tablet        │    │          3 │ HP Elite        │           2 │
+└─────────────┴───────────────┘    │          4 │ Lenovo Thinkpad │           2 │
+                                   │          5 │ iPad            │           3 │
+                                   │          6 │ Kindle Fire     │           3 │
+                                   └────────────┴─────────────────┴─────────────┘
+```
+
+`category_id` if the primary key in `categories` and a foreign key in `products`. This way, every product belongs to one category.
+
+We can then join the tables *without specifying the join clause* with `NATURAL JOIN`.
+
+`NATURAL JOIN` uses the *implicit join clause based on the common column* (`category_id`):
+
+```sql
+SELECT *
+FROM products NATURAL JOIN categories;
+```
+| category_id | product_id |  product_name   | category_name |
+|-------------|------------|-----------------|---------------|
+|           1 |          1 | iPhone          | Smart Phone   |
+|           1 |          2 | Samsung Galaxy  | Smart Phone   |
+|           2 |          3 | HP Elite        | Laptop        |
+|           2 |          4 | Lenovo Thinkpad | Laptop        |
+|           3 |          5 | iPad            | Tablet        |
+|           3 |          6 | Kindle Fire     | Tablet        |
+
+<br>
+
+The query below is equivalent to this one with `INNER JOIN`:
+
+```sql
+SELECT *
+FROM products INNER JOIN categories
+USING (category_id);
+```
+
+<br>
+
+If we want `NATURAL JOIN` to perform joins other than the `INNER JOIN`, we use the optional `[INNER|LEFT|JOIN]` specifications as shown below:
+
+```sql
+SELECT *
+FROM products NATURAL [INNER|LEFT|RIGHT] JOIN categories;
+```
+
+<br>
+
+*`NATURAL JOIN` should be avoided whnever possible*, as it <u>*may produce unexpected results*</u> (e.g. if tables have more than one common column).
 
 #### Summary
 
