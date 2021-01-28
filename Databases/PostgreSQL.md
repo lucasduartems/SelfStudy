@@ -60,10 +60,17 @@
       - [CROSS JOIN](#cross-join)
       - [NATURAL JOIN](#natural-join)
       - [Summary](#summary)
+  * [Subqueries](#subqueries)
+    + [EXISTS](#exists)
+    + [ANY](#any)
+    + [ALL](#all)
+  * [WITH](#with)
   * [PostgreSQL CLI commands](#postgresql-cli-commands)
 - [References](#references)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
+
 
 
 # PostgreSQL installation on Linux
@@ -86,9 +93,9 @@ psql
 ## Setting a password
 
 ```
-postgres=# \password 
+postgres=# \password
 Enter new password:
-Enter it again: 
+Enter it again:
 ```
 
 ## Importing a sample database
@@ -458,7 +465,7 @@ The following examples refer to the `dvd rental` database once again:
 #### Simple filter clause
 
 ```sql
-SELECT last_name, first_name 
+SELECT last_name, first_name
 FROM customer
 WHERE first_name = 'Jamie';
 ```
@@ -472,7 +479,7 @@ WHERE first_name = 'Jamie';
 #### AND, OR
 
 ```sql
-SELECT last_name, first_name 
+SELECT last_name, first_name
 FROM customer
 WHERE first_name = 'Jamie' AND last_name = 'Rice';
 ```
@@ -528,7 +535,7 @@ WHERE first_name NOT IN ('Ann', 'Anne', 'Annie');
 <br>
 
 ```sql
-SELECT customer_id, first_name, last_name 
+SELECT customer_id, first_name, last_name
 FROM customer
 WHERE customer_id IN (
 	SELECT customer_id
@@ -656,7 +663,7 @@ ORDER BY name_length;
 <br>
 
 ```sql
-SELECT customer_id, payment_id, amount, payment_date 
+SELECT customer_id, payment_id, amount, payment_date
 FROM payment
 WHERE payment_date NOT BETWEEN '2007-02-07' AND '2007-02-15'
 ```
@@ -703,9 +710,9 @@ LIMIT    row_count
 <br>
 
 ```sql
-SELECT film_id, title, release_year 
+SELECT film_id, title, release_year
 FROM film
-ORDER BY film_id 
+ORDER BY film_id
 LIMIT 5;
 ```
 | film_id |      title       | release_year  |
@@ -725,9 +732,9 @@ We should always use `LIMIT` together with `ORDER BY`, as *tables store rows in 
 #### OFFSET
 
 ```sql
-SELECT film_id, title, release_year 
+SELECT film_id, title, release_year
 FROM film
-ORDER BY film_id 
+ORDER BY film_id
 LIMIT 5 OFFSET 3;
 ```
 | film_id |      title       | release_year  |
@@ -743,7 +750,7 @@ LIMIT 5 OFFSET 3;
 #### Top/bottom rows
 
 ```sql
-SELECT film_id, title, rental_rate 
+SELECT film_id, title, rental_rate
 FROM film
 ORDER BY rental_rate DESC
 LIMIT 10;
@@ -781,7 +788,7 @@ FETCH FIRST row_count ROWS ONLY;
 <br>
 
 ```sql
-SELECT film_id, title 
+SELECT film_id, title
 FROM film
 ORDER BY title
 OFFSET 3 ROWS
@@ -850,7 +857,7 @@ Order of evaluation:
 <br>
 
 ```sql
-SELECT customer_id 
+SELECT customer_id
 FROM payment
 GROUP BY customer_id
 ```
@@ -870,7 +877,7 @@ The qeury above works like the `DISINCT` clause, as it removes any duplicate `cu
 #### Aggregate functions
 
 ```sql
-SELECT customer_id, SUM(amount) 
+SELECT customer_id, SUM(amount)
 FROM payment
 GROUP BY customer_id;
 ```
@@ -886,7 +893,7 @@ GROUP BY customer_id;
 <br>
 
 ```sql
-SELECT customer_id, SUM(amount) 
+SELECT customer_id, SUM(amount)
 FROM payment
 GROUP BY customer_id
 ORDER BY SUM(amount) DESC;
@@ -931,9 +938,9 @@ For info on *joins* see the [JOIN](#join) section.
 <br>
 
 ```sql
-SELECT staff_id, COUNT(payment_id) 
+SELECT staff_id, COUNT(payment_id)
 FROM payment
-GROUP BY staff_id 
+GROUP BY staff_id
 ```
 | staff_id | count |
 |----------|-------|
@@ -943,7 +950,7 @@ GROUP BY staff_id
 <br>
 
 ```sql
-SELECT customer_id, staff_id, SUM(amount) AS total_spent 
+SELECT customer_id, staff_id, SUM(amount) AS total_spent
 FROM payment
 GROUP BY staff_id, customer_id
 ORDER BY customer_id;
@@ -967,7 +974,7 @@ In the query above, `total_spent` is calculated for every <u>*`(customer_id, sta
 <br>
 
 ```sql
-SELECT DATE(payment_date), sum(amount) 
+SELECT DATE(payment_date), sum(amount)
 FROM payment
 GROUP BY DATE(payment_date)
 ORDER BY DATE(payment_date);
@@ -1050,10 +1057,10 @@ The query above calculates the total amount each customer has spent and ignores 
 <br>
 
 ```sql
-SELECT store_id, count(customer_id) 
+SELECT store_id, count(customer_id)
 FROM customer
 GROUP BY store_id
-HAVING count(customer_id) > 300; 
+HAVING count(customer_id) > 300;
 ```
 
 <br>
@@ -1316,7 +1323,7 @@ SELECT NULL, segment, SUM(quantity)
 FROM sales
 GROUP BY segment
 
-UNION ALL 
+UNION ALL
 
 SELECT NULL, NULL, SUM(quantity)
 FROM sales
@@ -1593,7 +1600,7 @@ Taking the `rental` table from the `dvd rental` database as an example:
 <br>
 
 ```sql
-SELECT 
+SELECT
 	EXTRACT (YEAR  FROM rental_date) AS y,
 	EXTRACT (MONTH FROM rental_date) AS m,
 	EXTRACT (DAY   FROM rental_date) AS d,
@@ -1712,7 +1719,7 @@ The `dvd rental` brings the following table relationships:
 │   password    │        └────────────────┘        │   last_update │
 │   last_update │                                  │   active      │
 │   picture     │                                  └───────────────┘
-└───────────────┘                                                   
+└───────────────┘
 ```
 
 <br>
@@ -1942,7 +1949,7 @@ WHERE department_name IS NULL;
 #### Self join
 
 ```sql
-SELECT a1.color AS "Color 1", a2.color AS "Color 2" 
+SELECT a1.color AS "Color 1", a2.color AS "Color 2"
 FROM color_a a1 INNER JOIN color_a a2
 ON a1.color = a2.color;
 ```
@@ -2090,7 +2097,7 @@ ON f1.film_id != f2.film_id AND f1.length = f2.length;
 
 Taking the `T1` and `T2` tables below as an example:
 
-```  
+```
    T1           T2
 ┌───────┐    ┌───────┐
 │ label │    │ score │
@@ -2213,7 +2220,7 @@ FROM products NATURAL [INNER|LEFT|RIGHT] JOIN categories;
 | &emsp; ![](images/full_join_unique.png)      | <tt>**SELECT** *</tt> <br> <tt>**FROM** a **FULL JOIN** b</tt> <br> <tt>**ON** a.key = b.key</tt>  <br> <tt>**WHERE** a.key **IS NULL OR** b.key **IS NULL**;</tt> |
 | ![](images/cartesian_mini.png)               | <tt>**SELECT** *</tt> <br> <tt>**FROM** a **CROSS JOIN** b;</tt>                                                                                                   |
 
-### Subqueries
+## Subqueries
 
 ```
 ┌────────────────────┐  ┌────────────────┐  ┌────────────────┐
@@ -2243,7 +2250,7 @@ FROM products NATURAL [INNER|LEFT|RIGHT] JOIN categories;
 SELECT film_id, title, rental_rate
 FROM film
 WHERE rental_rate > (
-	SELECT AVG(rental_rate) 
+	SELECT AVG(rental_rate)
 	FROM film
 )
 ```
@@ -2264,9 +2271,9 @@ WHERE rental_rate > (
 ```sql
 -- Films returned between 2005-05-29 and 2005-05-30
 SELECT film_id, title
-FROM film 
+FROM film
 WHERE film_id IN (
-	SELECT inventory.film_id 
+	SELECT inventory.film_id
 	FROM rental INNER JOIN inventory
 	ON inventory.inventory_id = rental.inventory_id
 	WHERE return_date BETWEEN '2005-05-29' AND '2005-05-30'
@@ -2283,80 +2290,319 @@ WHERE film_id IN (
 
 <br>
 
-#### EXISTS
+### EXISTS
+
+`EXISTS (subquery)` tests `subquery` for existence of rows:
+
+ - `subquery` returns *any row*: `EXISTS` returns `true`;
+
+ - `subquery` returns *no rows*: `EXISTS` returns `false`;
+
+ - `subquery` returns *`NULL`*: `EXISTS` returns `true`;
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+As `EXISTS` only cares about the number of returned rows and not their contents, we can use this common convention:
 
 ```sql
+EXISTS (
+    SELECT 1
+    FROM   table
+    WHERE  condition
+)
+```
+
+<br>
+
+An example using the `customer` and `payment` tables fom `dvdrental` database:
 
 ```
-|     |     |
-|-----|-----|
-|     |     |
+┌────────────────┐  ┌─────────────────┐
+│   payment      │  │   customer      │
+├────────────────┤  ├─────────────────┤
+│ * payment_id   │  │ * customer_id   │
+│   customer_id  │  │   store_id      │
+│   staff_id     │  │   first_name    │
+│   rental_id    │  │   last_name     │
+│   amount       │  │   email         │
+│   payment_date │  │   address_id    │
+└────────────────┘  │   activebool    │
+                    │   create_date   │
+                    │   last_update   │
+                    │   active        │
+                    └─────────────────┘
+```
+
+```sql
+-- Customers that have one or more payments
+
+SELECT first_name, last_name
+FROM customer
+WHERE EXISTS (
+    SELECT 1
+    FROM payment
+    WHERE payment.customer_id = customer.customer_id
+)
+```
+
+### ANY
+
+`ANY` compares a value to the values returned by a subquery.
+
+An example using the `film`, `category` and `film_category` tables from the `dvdrental` database:
+
+```
+┌───────────────┐  ┌───────────────┐  ┌────────────────────┐
+│   category    │  │ film_category │  │        film        │
+├───────────────┤  ├───────────────┤  ├────────────────────┤
+│ * category_id │  │ * film_id     │  │ * film_id          │
+│   name        │  │   category_id │  │   title            │
+│   last_update │  │   last_update │  │   description      │
+└───────────────┘  └───────────────┘  │   release_year     │
+                                      │   language_id      │
+                                      │   rental_duration  │
+                                      │   rental_rate      │
+                                      │   length           │
+                                      │   replacement_cost │
+                                      │   rating           │
+                                      │   last_update      │
+                                      │   special_features │
+                                      │   fulltext         │
+                                      └────────────────────┘
+```
 
 <br>
 
 ```sql
+-- Action or drama films
+
+SELECT title, category_id
+FROM film INNER JOIN film_category
+USING (film_id)
+WHERE category_id = ANY (
+	SELECT category_id
+	FROM category
+	WHERE name = 'Action' OR name = 'Drama'
+)
+```
+|       title        | category_id |
+|--------------------|-------------|
+| Amadeus Holy       |           1 |
+| American Circus    |           1 |
+| Antitrust Tomatoes |           1 |
+| Apollo Teen        |           7 |
+| Ark Ridgemont      |           1 |
+| . . .              | . . .       |
+
+<br>
+
+The query above fetches all movies whose genre is `Action` or `Drama`, and is equivalent to the following query with `IN`:
+
+```sql
+SELECT title, category_id
+FROM film INNER JOIN film_category
+USING (film_id)
+WHERE category_id IN (
+	SELECT category_id
+	FROM category
+	WHERE name = 'Action' OR name = 'Drama'
+)
+```
+
+<br>
+
+However, the following queries are *not* equivalent:
+
+```sql
+-- Genre != 'Action' AND Genre != 'Drama'          -- Genre != 'Action' OR Genre != 'Drama'
+
+SELECT title, category_id                          SELECT title, category_id
+FROM film INNER JOIN film_category                 FROM film INNER JOIN film_category
+USING (film_id)                                    USING (film_id)
+WHERE category_id NOT IN (                         WHERE category_id != ANY (
+	SELECT category_id                                 SELECT category_id
+	FROM category                                      FROM category
+	WHERE name = 'Action' OR name = 'Drama'            WHERE name = 'Action' OR name = 'Drama'
+)                                                  )
+```
+
+ - The first query above (`NOT IN`) *excludes action and drama*;
+
+ - The second one (`!= ANY`) *selects all movies*;
+
+<br>
+
+On the other hand, the queries below *are* equivalent:
+
+```sql
+-- Genre != 'Action'                               -- Genre != 'Action'
+
+SELECT title, category_id                          SELECT title, category_id
+FROM film INNER JOIN film_category                 FROM film INNER JOIN film_category
+USING (film_id)                                    USING (film_id)
+WHERE category_id NOT IN (                         WHERE category_id != ANY (
+	SELECT category_id                                 SELECT category_id
+	FROM category                                      FROM category
+	WHERE name = 'Action'                              WHERE name = 'Action'
+)                                                  )
+```
+
+### ALL
+
+An example using the `film` table from the `dvdrental` database:
 
 ```
-|     |     |
-|-----|-----|
-|     |     |
+┌────────────────────┐
+│        film        │
+├────────────────────┤
+│ * film_id          │
+│   title            │
+│   description      │
+│   release_year     │
+│   language_id      │
+│   rental_duration  │
+│   rental_rate      │
+│   length           │
+│   replacement_cost │
+│   rating           │
+│   last_update      │
+│   special_features │
+│   fulltext         │
+└────────────────────┘
+```
 
 <br>
 
 ```sql
+-- Films with lenghts bigger than all averages
+
+SELECT film_id, title, length
+FROM film
+WHERE length > ALL (
+	SELECT AVG (length) 
+	FROM film
+	GROUP BY rating
+)
+```
+| film_id |      title      | length |
+|---------|-----------------|--------|
+|       5 | African Egg     |    130 |
+|       6 | Agent Truman    |    169 |
+|      11 | Alamo Videotape |    126 |
+|      12 | Alaska Phantom  |    136 |
+|      13 | Ali Forever     |    150 |
+| . . .   | . . .           | . . .  |
+
+
+## WITH
+
+*Common Table Expressions (CTEs)* can simplify complex queries by producing *temporary result sets* that can be referenced within another SQL statement.
+
+Taking the `film` table from the `dvdrental` database as an example once again:
 
 ```
-|     |     |
-|-----|-----|
-|     |     |
+┌────────────────────┐
+│        film        │
+├────────────────────┤
+│ * film_id          │
+│   title            │
+│   description      │
+│   release_year     │
+│   language_id      │
+│   rental_duration  │
+│   rental_rate      │
+│   length           │
+│   replacement_cost │
+│   rating           │
+│   last_update      │
+│   special_features │
+│   fulltext         │
+└────────────────────┘
+```
 
 <br>
+
+The following query can be used to classify all movies by length:
 
 ```sql
+SELECT 
+	film_id,
+	title,
+	(
+	    CASE 
+	        WHEN length < 30 THEN 'Short'
+		    WHEN length < 90 THEN 'Medium'
+		    ELSE 'Long'
+        END
+    ) length 
 
+FROM film
 ```
-|     |     |
-|-----|-----|
-|     |     |
+| film_id |       title       | length |
+|---------|-------------------|--------|
+|     133 | Chamber Italian   | Long   |
+|     384 | Grosse Wonderful  | Medium |
+|       8 | Airport Pollock   | Medium |
+|      98 | Bright Encounters | Medium |
+|       1 | Academy Dinosaur  | Medium |
+| . . .   | . . .             | . . .  |
 
 <br>
+
+We can then reuse the produced result set:
 
 ```sql
+WITH length_classification AS (
+	SELECT 
+		film_id,
+		title,
+		(
+		    CASE 
+		        WHEN length < 30 THEN 'Short'
+			    WHEN length < 90 THEN 'Medium'
+			    ELSE 'Long'
+	        END
+	    ) length
 
+	FROM film
+)
+SELECT film_id, title, length 
+FROM length_classification
+WHERE length = 'Long'
+ORDER BY title;
 ```
-|     |     |
-|-----|-----|
-|     |     |
+| film_id |      title       | length |
+|---------|------------------|--------|
+|       4 | Affair Prejudice | Long   |
+|       5 | African Egg      | Long   |
+|       6 | Agent Truman     | Long   |
+|       9 | Alabama Devil    | Long   |
+|      11 | Alamo Videotape  | Long   |
+| . . .   | . . .            | . . .  |
 
-<br>
 
-```sql
 
-```
-|     |     |
-|-----|-----|
-|     |     |
 
-<br>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ## PostgreSQL CLI commands
