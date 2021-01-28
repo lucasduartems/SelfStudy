@@ -4,7 +4,7 @@
   * [Special data types](#special-data-types)
 - [Constraints](#constraints)
   * [PRIMARY KEY](#primary-key)
-  * [Foreing key](#foreing-key)
+  * [FOREIGN KEY](#foreing-key)
   * [CHECK](#check)
   * [UNIQUE](#unique)
   * [NOT NULL](#not-null)
@@ -84,77 +84,6 @@
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
 
-
-# PostgreSQL data types
-
-| Data type    | Description   | Examples                 |
-|--------------|---------------|--------------------------|
-| `BOOLEAN`    | True or False | `true` `false` `0` `1`|
-| `CHAR(n)`    | *Fixed-length* (`n`), *space-padded* string | `'Example'` `'Test___'` `'A______'` |
-| `VARCHAR(n)` | *Variable-length* (up to `n`), *unpadded* string | `'Example'` `'Test'` `'A'` |
-| `TEXT`       | *Unlimited-length* string | `'Example'` `'Test'` `'A'` |
-| `SMALLINT` | 2 bytes: -32,768 ~ 32,767| `1` `20` `300` |
-| `INTEGER` | 4 bytes: -2,1&times; 10<sup>9</sup> ~ 2,1&times; 10<sup>9</sup>| `1` `20` `300` |
-| `BIGINT` | 8 bytes: -9,2 &times; 10<sup>18</sup> ~ 9,2 &times; 10<sup>18</sup>| `1` `20` `300` |
-| `SERIAL` | *Auto-incremented* `INTEGER` | `1` `2` `3` `4` |
-| `NUMERIC(p, s)` | A number with `p` digits, `s` being<br>decimal places. Typically used when<br> exactness is required (quantities,<br>monetary amounts) | `1234.567 (p = 7, s = 3)` |
-| `DATE` | `yyyy-mm-dd` dates| `'1999-12-31'` `'2000-01-01'` | 
-| `TIME` | `HH:MM:SS` time | `'12:00:00'` `'17:30:00'` | 
-| `TIMESTAMP` | Both date and time | `'1999-12-31 12:30:00'` |
-| `TIMESTAMPZ` | Both date and time, *timezone-aware* | `'1999-12-31 12:30:00-03'` |
-| `INTERVAL` | Periods of time | `INTERVAL '2h 30m'` `INTERVAL '2 months ago'`
-| `ARRAY` | Arrays of values. First index is `1`| `ARRAY ['abc', 'def']` `'{"abc","def"}'`|
-| `JSON` | JSON objects | `'{ "name": "Joe" }'` |
-| `UUID` | Universal unique identifiers ([RFC 4122](https://tools.ietf.org/html/rfc4122)) | `'4dab074f-ae35-4323-a5a8-2c37cadfa998'`|
-
-## Special data types
-
-| Data type    | Description   |
-|--------------|---------------|
-| box | a rectangular box |
-| line |  a set of points |
-| point | a geometric pair of numbers |
-| lseg | a line segment |
-| polygon | a closed geometric |
-| inet | IPv4 address |
-| macaddr | MAC address |
-
-
-# Constraints
-
-The constraints define "special columns":
-
-## PRIMARY KEY
-
-Unique, non-null identifier for a single row in a table.
-
-## Foreing key
-Column (or group of columns) that references the primary key of another table.
-
-## CHECK
-
-Used in table-creation time, provides a way of validating values before new rows are inserted.
-
-## UNIQUE
-Prevents repeated values from being added to the column.
-
-## NOT NULL
-
-Makes sure that no NULL values are added to the column.
-
-Example table creation with constraints:
-
-```postgres
-CRETE TABLE car (
-    car_id SERIAL PRIMARY KEY,
-    make_id INT,
-    model VARCHAR(255) NOT NULL,
-    seats SMALLINT CHECK (seats <= 5),
-    CONSTRAINT fk_make FOREIGN KEY(make_id) REFERENCES make(make_id)
-);
-```
-
-
 # PostgreSQL installation on Linux
 
 ```bash
@@ -208,6 +137,303 @@ A summary and the data types can be found below:
 ![TablesBrief](images/TablesBrief.png)
 
 ![TableDataTypes](images/TableDataTypes.png)
+
+# PostgreSQL data types
+
+| Data type    | Description   | Examples                 |
+|--------------|---------------|--------------------------|
+| `BOOLEAN`    | True or False | `true` `false` `0` `1`|
+| `CHAR(n)`    | *Fixed-length* (`n`), *space-padded* string | `'Example'` `'Test___'` `'A______'` |
+| `VARCHAR(n)` | *Variable-length* (up to `n`), *unpadded* string | `'Example'` `'Test'` `'A'` |
+| `TEXT`       | *Unlimited-length* string | `'Example'` `'Test'` `'A'` |
+| `INTEGER` | 4 bytes: -2,1&times; 10<sup>9</sup> to 2,1&times; 10<sup>9</sup>| `1` `20` `300` |
+| `BIGINT` | 8 bytes: -9,2 &times; 10<sup>18</sup> to 9,2 &times; 10<sup>18</sup>| `1` `20` `300` |
+| `SMALLINT` | 2 bytes: -32,768 to 32,767| `1` `20` `300` |
+| `SERIAL` | *Auto-incremented* int (1 to 2,1 &times; 10<sup>9</sup>)<br>Similar to `AUTOINCREMENT` in MySQL| `1` `2` `3` `4` |
+| `BIGSERIAL` | *Auto-incremented* int (1 to to 9,2 &times; 10<sup>18</sup>) | `1` `2` `3` `4` |
+| `SMALLSERIAL` | *Auto-incremented* int (1 to 32,767) | `1` `2` `3` `4` |
+| `NUMERIC(p, s)` | A number with `p` digits, `s` being<br>decimal places. Typically used when<br> exactness is required (quantities,<br>monetary amounts) | `1234.567 (p = 7, s = 3)` |
+| `DATE` | `yyyy-mm-dd` dates| `'1999-12-31'` `'2000-01-01'` | 
+| `TIME` | `HH:MM:SS` time | `'12:00:00'` `'17:30:00'` | 
+| `TIMESTAMP` | Both date and time | `'1999-12-31 12:30:00'` |
+| `TIMESTAMPZ` | Both date and time, *timezone-aware* | `'1999-12-31 12:30:00-03'` |
+| `INTERVAL` | Periods of time | `INTERVAL '2h 30m'` `INTERVAL '2 months ago'`
+| `ARRAY` | Arrays of values. First index is `1`| `ARRAY ['abc', 'def']` `'{"abc","def"}'`|
+| `JSON` | JSON objects | `'{ "name": "Joe" }'` |
+| `UUID` | Universal unique identifiers ([RFC 4122](https://tools.ietf.org/html/rfc4122)) | `'4dab074f-ae35-4323-a5a8-2c37cadfa998'`|
+
+## Special data types
+
+| Data type    | Description   |
+|--------------|---------------|
+| box | a rectangular box |
+| line |  a set of points |
+| point | a geometric pair of numbers |
+| lseg | a line segment |
+| polygon | a closed geometric |
+| inet | IPv4 address |
+| macaddr | MAC address |
+
+
+# Constraints
+
+The constraints define "special columns":
+
+## PRIMARY KEY
+
+Unique, non-null identifier for a single row in a table.
+
+## FOREIGN KEY
+Column (or group of columns) that references the primary key of another table.
+
+## CHECK
+
+Used in table-creation time, provides a way of validating values before new rows are inserted.
+
+## UNIQUE
+Prevents repeated values from being added to the column.
+
+## NOT NULL
+
+Makes sure that no NULL values are added to the column.
+
+Example table creation with constraints:
+
+```postgres
+CRETE TABLE car (
+    car_id  SERIAL       PRIMARY KEY,
+    make_id INT,
+    model   VARCHAR(255) NOT NULL,
+    seats   SMALLINT     CHECK (seats <= 5),
+
+    CONSTRAINT fk_make FOREIGN KEY(make_id) REFERENCES make(make_id)
+);
+```
+
+<br>
+
+More on table creation in the [next section](#create).
+
+# Table management
+
+## Table creation
+
+### CREATE
+
+Tables can be created with the `CREATE TABLE` commands:
+
+```postgres
+CREATE TABLE [IF NOT EXISTS] table_name (
+    column1 DATATYPE(length) column_constraint,
+    column2 DATATYPE(length) column_constraint,
+    column3 DATATYPE(length) column_constraint,
+    table_constraints
+)
+```
+
+<br>
+
+An example:
+
+```postgres
+CREATE TABLE account (
+	user_id    SERIAL       PRIMARY KEY,
+	username   VARCHAR(50)  UNIQUE NOT NULL,
+	password   VARCHAR(50)  NOT NULL,
+	email      VARCHAR(255) UNIQUE NOT NULL,
+	created_on TIMESTAMP    NOT NULL,
+	last_login TIMESTAMP
+);
+
+CREATE TABLE role (
+	role_id    SERIAL       PRIMARY KEY,
+	role_name  VARCHAR(255) UNIQUE NOT NULL
+);
+
+CREATE TABLE account_role (
+	user_id    INT          NOT NULL,
+	role_id    INT          NOT NULL,
+	grant_date TIMESTAMP,
+
+	PRIMARY KEY (user_id, role_id),
+	FOREIGN KEY (user_id) REFERENCES account(user_id),
+	FOREIGN KEY (role_id) REFERENCES role(role_id),
+);
+```
+```
+┌──────────────┐      ┌────────────────┐      ┌─────────────┐
+│   account    │      │  account_role  │      │     role    │
+├──────────────┤      ├────────────────┤      ├─────────────┤
+│ * user_id    ├─────<│ * user_id      │>─────┤ * role_id   │
+│   username   │      │ * role_id      │      │   role_name │
+│   password   │      │   grant_date   │      └─────────────┘
+│   email      │      └────────────────┘
+│   created_on │
+│   last_login │
+└──────────────┘
+```
+
+### SELECT INTO
+
+`SELECT INTO` creates a new table from the result set of a query:
+
+``` postgres
+SELECT                           columns
+INTO [ TEMP | UNLOGGED ] [TABLE] new_table_name
+FROM                             table_name
+WHERE                            search_condition
+```
+
+Using the `film` table from the `dvdrental` database as an example:
+
+```
+┌────────────────────┐
+│        film        │
+├────────────────────┤
+│ * film_id          │
+│   title            │
+│   description      │
+│   release_year     │
+│   language_id      │
+│   rental_duration  │
+│   rental_rate      │
+│   length           │
+│   replacement_cost │
+│   rating           │
+│   last_update      │
+│   special_features │
+│   fulltext         │
+└────────────────────┘
+```
+
+<br>
+
+```postgres
+SELECT     film_id, title, rental_rate
+INTO TABLE film_r
+FROM       film
+WHERE      rating = 'R' AND rental_duration = 5
+ORDER BY   title;
+```
+```postgres
+SELECT * FROM film_r
+```
+| film_id |        title        | rental_rate |
+|---------|---------------------|-------------|
+|      54 | Banger Pinocchio    |        0.99 |
+|     115 | Campus Remember     |        2.99 |
+|     138 | Chariots Conspiracy |        2.99 |
+|     159 | Closer Bang         |        4.99 |
+|     168 | Comancheros Enemy   |        0.99 |
+| . . .   | . . .               | . . .       |
+
+### CREATE TABLE AS
+
+`CREATE TABLE AS` can also be used to create a table from the results of a query.
+
+An equivalent to the previous example with [`SELECT INTO`](#select-into):
+
+```postgres
+CREATE TABLE film_r AS
+SELECT       film_id, title, rental_rate
+FROM         film
+WHERE        rating = 'R' AND rental_duration = 5
+ORDER BY     title;
+```
+
+### GENERATED AS IDENTITY
+
+`GENERATED AS IDENTITY` allows us to automatically assign a unique number to a column.
+
+`GENERATED AS IDENTITY` is an SQL standard-conforming version of the `SERIAL` columns.
+
+`GENERATED ALWAYS` instructs PostgreSQL to generate a value for the identity column. The values cannot be inserted nor updated:
+
+```postgres
+CREATE TABLE color (
+    color_id   INT          GENERATED ALWAYS AS IDENTITY
+    color_name VARCHAR(255) NOT NULL
+)
+```
+
+# Sequences
+
+A sequence is an ordered list of integers, such as `{1,2,3,4,5}` and `{5,4,3,2,1}`.
+
+Sequences can be created in PostgreSQL with the `CREATE SEQUENCE` command:
+
+```postgres
+CREATE SEQUENCE [ IF NOT EXISTS ] sequence_name
+[ AS { SMALLINT | INT | BIGINT } ]
+[ INCREMENT [ BY ] increment_value ]
+[ MINVALUE min_number | NO MINVALUE ]
+[ MAXVALUE max_number | NO MAXVALUE ]
+[ START [ WITH ] first_number ]
+[ CACHE number_of_preallocated_numbers ]
+[ [ NO ] CYCLE ]
+[ OWNED BY { table_name.column_name | NONE } ]
+```
+
+<br>
+
+Example:
+
+```postgres
+CREATE SEQUENCE mysequence
+INCREMENT 5
+MAXVALUE 15
+CYCLE;
+```
+
+<br>
+
+```postgres
+SELECT nextval('mysequence');
+```
+| nextval |
+|---------|
+|       1 |
+
+<br>
+
+```postgres
+SELECT nextval('mysequence');
+```
+| nextval |
+|---------|
+|       6 |
+
+<br>
+
+```postgres
+SELECT nextval('mysequence');
+```
+| nextval |
+|---------|
+|      11 |
+<br>
+
+```postgres
+SELECT nextval('mysequence');
+```
+| nextval |
+|---------|
+|       1 |
+
+<br>
+
+If a sequence is associated with (`OWNED BY`) a table column, it will be dropped (deleted) as soon as the column or table is dropped.
+
+
+
+
+
+
+
+
+
+
+
 
 # Structured Query Language (SQL)
 
