@@ -97,6 +97,7 @@
     + [Upsert](#upsert)
   * [DELETE](#delete)
     + [DELETE USING](#delete-using)
+  * [Transactions](#transactions)
   * [PostgreSQL CLI commands](#postgresql-cli-commands)
 - [References](#references)
 
@@ -143,7 +144,7 @@ postgres=# create database dvdrental;
 postgres=# \q
 ```
 
-```bash
+```
 pg_restore --dbname=dvdrental --verbose dvdrental.tar
 ```
 
@@ -4100,6 +4101,67 @@ WHERE phone IN (
     FROM blacklist
 );
 ```
+
+## Transactions
+
+Database transactions are *<u>single units of work</u>* that consist of one or more operations.
+
+Transactions are <u>*atomic*</u>: the operations are completed in a <u>*all-or-nothing*</u> fashion.
+
+Transactions can be *rolled back*.
+
+<br>
+
+Example:
+
+```postgres
+CREATE TABLE account (
+	id            SERIAL        PRIMARY KEY,
+	account_owner VARCHAR(255)  NOT NULL UNIQUE,
+	balance       DECIMAL(15,2)
+);
+
+INSERT INTO account ( account_owner    , balance )
+VALUES              ( 'Hilary Hahn'    , 10000   ),
+                    ( 'Itzhak Perlman' , 10000   ),
+                    ( 'Sarah Chang'    , 20000   );
+                    
+SELECT *
+FROM account;
+```
+| id | account_owner  | balance  |
+|----|----------------|----------|
+|  1 | Hilary Hahn    |    10000 |
+|  2 | Itzhak Perlman |    10000 |
+|  3 | Sarah Chang    |    20000 |
+
+<br>
+
+```postgres
+-- Transfer $1,000 from Hilary to Itzhak
+
+BEGIN;
+
+UPDATE account
+SET    balance = balance - 1000
+WHERE  id = 1;
+
+UPDATE account
+SET    balance = balance + 1000
+WHERE  id = 2;
+
+COMMIT;
+```
+```postgres
+SELECT   *
+FROM     account
+ORDER BY id;
+```
+| id | account_owner  | balance  |
+|----|----------------|----------|
+|  1 | Hilary Hahn    |     9000 |
+|  2 | Itzhak Perlman |    11000 |
+|  3 | Sarah Chang    |    20000 |
 
 ## PostgreSQL CLI commands
 
