@@ -81,6 +81,11 @@
       - [CROSS JOIN](#cross-join)
       - [NATURAL JOIN](#natural-join)
       - [Summary](#summary)
+  * [Conditional expressions](#conditional-expressions)
+    + [CASE](#case)
+    + [COALESCE](#coalesce)
+    + [NULLIF](#nullif)
+  * [CAST](#cast)
   * [Subqueries](#subqueries)
     + [EXISTS](#exists)
     + [ANY](#any)
@@ -96,7 +101,6 @@
 - [References](#references)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
-
 
 
 # PostgreSQL installation on Linux
@@ -3100,7 +3104,342 @@ FROM products NATURAL [INNER|LEFT|RIGHT] JOIN categories;
 | &emsp; ![](images/full_join_unique.png)      | <tt>**SELECT** *</tt> <br> <tt>**FROM** a **FULL JOIN** b</tt> <br> <tt>**ON** a.key = b.key</tt>  <br> <tt>**WHERE** a.key **IS NULL OR** b.key **IS NULL**;</tt> |
 | ![](images/cartesian_mini.png)               | <tt>**SELECT** *</tt> <br> <tt>**FROM** a **CROSS JOIN** b;</tt>                                                                                                   |
 
+## Conditional expressions
+
+### CASE
+
+An example:
+
+```postgres
+CREATE TABLE car (
+	id      INT          GENERATED ALWAYS AS IDENTITY,
+	make    VARCHAR(255) NOT NULL,
+	model   VARCHAR(255) NOT NULL,
+	mileage INT          DEFAULT 0
+);
+
+INSERT INTO car ( make         , model    , mileage )
+VALUES          ( 'Volkswagen' , 'Golf'   , 20000   ),
+                ( 'Volkswagen' , 'Jetta'  , 150000  ),
+                ( 'Volkswagen' , 'Tiguan' , 0       ),
+                ( 'Audi'       , 'A4'     , 250000  ),
+                ( 'Audi'       , 'RS3'    , 0       ),
+                ( 'Lamborghini', 'Urus'   , 5000    );
+                
+SELECT * FROM car;
+```
+| id |    make     | model  | mileage |
+|----|-------------|--------|---------|
+|  1 | Volkswagen  | Golf   |   20000 |
+|  2 | Volkswagen  | Jetta  |  150000 |
+|  3 | Volkswagen  | Tiguan |       0 |
+|  4 | Audi        | A4     |  250000 |
+|  5 | Audi        | RS3    |       0 |
+|  6 | Lamborghini | Urus   |    5000 |
+
+<br>
+
+```postgres
+SELECT
+	make,
+	model,
+	CASE make
+		WHEN 'Volkswagen'  THEN 'Base'
+		WHEN 'Audi'        THEN 'Premium'
+		WHEN 'Lamborghini' THEN 'Exotic'
+	    ELSE                    'Unkonwn'
+    END category
+FROM car;
+```
+|    make     | model  | category |
+|-------------|--------|----------|
+| Volkswagen  | Golf   | Base     |
+| Volkswagen  | Jetta  | Base     |
+| Volkswagen  | Tiguan | Base     |
+| Lamborghini | Urus   | Exotic   |
+| Audi        | A4     | Premium  |
+| Audi        | RS3    | Premium  |
+
+<br>
+
+```postgres
+SELECT
+	make,
+	model,
+	mileage,
+	CASE
+		WHEN mileage < 100                       THEN 'New'
+		WHEN mileage >= 100 AND mileage < 100000 THEN 'Used'
+		WHEN mileage >= 100000                   THEN 'Very used'
+  END car_condition
+FROM car
+ORDER BY car_condition;
+```
+|    make     | model  | mileage | car_condition |
+|-------------|--------|---------|---------------|
+| Volkswagen  | Tiguan |       0 | New           |
+| Audi        | RS3    |       0 | New           |
+| Volkswagen  | Golf   |   20000 | Used          |
+| Lamborghini | Urus   |    5000 | Used          |
+| Volkswagen  | Jetta  |  150000 | Very used     |
+| Audi        | A4     |  250000 | Very used     |
+
+<br>
+
+```postgres
+SELECT
+	SUM (
+		CASE
+			WHEN make = 'Volkswagen' THEN 1
+			ELSE                          0
+		END
+	) AS "Base",
+	SUM (
+		CASE
+			WHEN make = 'Audi' THEN 1
+			ELSE                    0
+		END
+	) AS "Premium",
+	SUM (
+		CASE
+			WHEN make = 'Lamborghini' THEN 1
+			ELSE                           0
+		END
+	) AS "Exotic"
+FROM car;
+```
+| Base | Premium | Exotic |
+|------|---------|--------|
+|    3 |       2 |      1 |
+
+### COALESCE
+
+Examples:
+
+```postgres
+SELECT COALESCE (NULL, 'A', 'B', 'C') AS first_non_null;
+```
+| first_non_null |
+|----------------|
+| A              |
+
+<br>
+
+```postgres
+SELECT COALESCE (1, 2, 3) AS first_non_null;
+```
+| first_non_null |
+|----------------|
+|              1 |
+
+<br>
+
+```postgres
+SELECT COALESCE (NULL, NULL) AS first_non_null;
+```
+| first_non_null |
+|----------------|
+| [null]         |
+
+<br>
+
+Taking the following table `items` as an example:
+
+| id | product | price | discount |
+|----|---------|-------|----------|
+|  1 | A       |  1000 |       10 |
+|  2 | B       |  1500 |       20 |
+|  3 | C       |   800 |        5 |
+|  4 | D       |   500 |   [null] |
+
+```sql
+SELECT
+    product,
+    price,
+    discount,
+    (price - COALESCE(discount, 0)) AS net_price
+
+FROM items;
+```
+| product | price | discount | net_price |
+|---------|-------|----------|-----------|
+| A       |  1000 |       10 |       990 |
+| B       |  1500 |       20 |      1480 |
+| C       |   800 |        5 |       795 |
+| D       |   500 |   [null] |       500 |
+
+<br>
+
+The foolowing query is equivalent to the preivous one:
+
+```postgres
+SELECT
+    product,
+    price,
+    discount,
+    (
+        price - CASE
+                    WHEN discount IS NULL THEN 0
+                    ELSE                       discount
+                END
+    ) AS net_price    
+FROM items;
+```
+
+<br>
+
+Both query are the same in terms of performance, but the former is more readable.
+
+### NULLIF
+
+Examples:
+
+```sql
+-- Return NULL if values are the same
+
+SELECT NULLIF ('abc', 'abc') AS equal_values;
+```
+| equal_values |
+|--------------|
+| [null]       |
+
+<br>
+
+```sql
+-- Return first value if values are different
+
+SELECT NULLIF (1, 0) AS first_different;
+```
+| first_different |
+|-----------------|
+|               1 |
+
+<br>
+
+```postgres
+CREATE TABLE phone (
+	id         SERIAL       PRIMARY KEY,
+	make       VARCHAR(30)  NOT NULL,
+	model      VARCHAR(255) NOT NULL,
+	sim_card_1 VARCHAR(30)  DEFAULT '',
+	sim_card_2 VARCHAR(30)  DEFAULT ''
+);
+
+INSERT INTO phone ( make       , model       , sim_card_1 , sim_card_2 )
+VALUES            ( 'Motorola' , 'Edge'      , 'Verizon'  , 'AT&T'     ),
+                  ( 'Motorola' , 'Razr 5G'   , 'T-Mobile' , 'Verizon'  );
+                  
+INSERT INTO phone ( make       , model       ,              sim_card_2 )
+VALUES            ( 'Samsung'  , 'Galaxy S21',              'Verizon'  );
+
+SELECT * FROM phone;
+```
+| id |   make   |   model    | sim_card_1 | sim_card_2 |
+|----|----------|------------|------------|------------|
+|  1 | Motorola | Edge       | Verizon    | AT&T       |
+|  2 | Motorola | Razr 5G    | T-Mobile   | Verizon    |
+|  3 | Samsung  | Galaxy S21 |            | Verizon    |
+
+<br>
+
+```postgres
+SELECT
+    make,
+    model,
+    COALESCE (
+        NULLIF (sim_card_1, ''), sim_card_2
+    )
+    AS first_available_sim
+
+FROM phone;
+```
+|   make   |   model    | first_available_sim |
+|----------|------------|---------------------|
+| Motorola | Edge       | Verizon             |
+| Motorola | Razr 5G    | T-Mobile            |
+| Samsung  | Galaxy S21 | Verizon             |
+
+## CAST
+
+Example:
+
+```postgres
+CREATE TABLE product (
+	id           SERIAL       PRIMARY KEY,
+	product_name VARCHAR(255) NOT NULL UNIQUE,
+	price        INT          DEFAULT 0,
+	discount     VARCHAR(2)   DEFAULT '0'
+);
+
+INSERT INTO product ( product_name , price , discount)
+VALUES              ( 'Smartphone' , 500   , '5'     ),
+                    ( 'Tablet'     , 400   , '10'    ),
+                    ( 'Laptop'     , 1000  , '0'     );
+                    
+SELECT *
+FROM product;
+```
+| id | product_name | price | discount |
+|----|--------------|-------|----------|
+|  1 | Smartphone   |   500 | 5        |
+|  2 | Tablet       |   400 | 10       |
+|  3 | Laptop       |  1000 | 0        |
+
+<br>
+
+```postgres
+SELECT
+	product_name,
+	price,
+	discount,
+	price * (1 - discount/100) AS net_price
+
+FROM product;
+```
+```html
+ERROR: operator does not exist: character varying / integer
+Hint: No operator matches the given name and argument type(s).
+You might need to add explicit type casts.
+```
+
+<br>
+
+```sql
+SELECT
+	product_name,
+	price,
+	discount,
+	price * (1 - CAST(discount AS FLOAT) / 100) AS net_price
+
+FROM product;
+```
+| product_name | price | discount | net_price |
+|--------------|-------|----------|-----------|
+| Smartphone   |   500 |        5 |       475 |
+| Tablet       |   400 |       10 |       360 |
+| Laptop       |  1000 |        0 |      1000 |
+
+
+<br>
+
+```sql
+SELECT
+	product_name,
+	price,
+	discount,
+	price * (1 - discount::FLOAT / 100) AS net_price
+
+FROM product;
+```
+| product_name | price | discount | net_price |
+|--------------|-------|----------|-----------|
+| Smartphone   |   500 |        5 |       475 |
+| Tablet       |   400 |       10 |       360 |
+| Laptop       |  1000 |        0 |      1000 |
+
 ## Subqueries
+
+Taking the `film`, `inventory` and `rental` tables from the `dvdrental` database as an example:
 
 ```
 ┌────────────────────┐  ┌────────────────┐  ┌────────────────┐
@@ -3458,6 +3797,10 @@ ORDER BY title;
 |       9 | Alabama Devil    | Long   |
 |      11 | Alamo Videotape  | Long   |
 | . . .   | . . .            | . . .  |
+
+<br>
+
+See more about `CASE` in [`CASE`](#case) section.
 
 ## INSERT
 
