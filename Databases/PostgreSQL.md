@@ -1,17 +1,30 @@
 # Table of contents
 
-- [PostgreSQL data types](#postgresql-data-types)
-  * [Special data types](#special-data-types)
-- [Constraints](#constraints)
-  * [PRIMARY KEY](#primary-key)
-  * [FOREIGN KEY](#foreing-key)
-  * [CHECK](#check)
-  * [UNIQUE](#unique)
-  * [NOT NULL](#not-null)
 - [PostgreSQL installation on Linux](#postgresql-installation-on-linux)
   * [Accessing PostgreSQL for the first time](#accessing-postgresql-for-the-first-time)
   * [Setting a password](#setting-a-password)
   * [Importing a sample database](#importing-a-sample-database)
+- [PostgreSQL data types](#postgresql-data-types)
+  * [Special data types](#special-data-types)
+- [Constraints](#constraints)
+  * [PRIMARY KEY](#primary-key)
+  * [FOREIGN KEY](#foreign-key)
+  * [CHECK](#check)
+  * [UNIQUE](#unique)
+  * [NOT NULL](#not-null)
+- [Table management](#table-management)
+  * [Table creation](#table-creation)
+    + [CREATE](#create)
+    + [SELECT INTO](#select-into)
+    + [CREATE TABLE AS](#create-table-as)
+    + [GENERATED AS IDENTITY](#generated-as-identity)
+  * [Table changing](#table-changing)
+    + [ALTER TABLE](#alter-table)
+    + [DROP TABLE](#drop-table)
+    + [TRUNCATE TABLE](#truncate-table)
+  * [Temporary tables](#temporary-tables)
+  * [Table copies](#table-copies)
+- [Sequences](#sequences)
 - [Structured Query Language (SQL)](#structured-query-language--sql-)
   * [SELECT](#select)
     + [FROM](#from)
@@ -83,6 +96,8 @@
 - [References](#references)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
+
 
 # PostgreSQL installation on Linux
 
@@ -278,10 +293,10 @@ CREATE TABLE account_role (
 `SELECT INTO` creates a new table from the result set of a query:
 
 ``` postgres
-SELECT                           columns
-INTO [ TEMP | UNLOGGED ] [TABLE] new_table_name
-FROM                             table_name
-WHERE                            search_condition
+SELECT                             columns
+INTO [ TEMP | UNLOGGED ] [ TABLE ] new_table_name
+FROM                               table_name
+WHERE                              search_condition
 ```
 
 Using the `film` table from the `dvdrental` database as an example:
@@ -355,6 +370,561 @@ CREATE TABLE color (
     color_name VARCHAR(255) NOT NULL
 )
 ```
+
+## Table changing
+
+### ALTER TABLE
+
+Examples of changing actions:
+
+```postgres
+ALTER TABLE table_name
+RENAME TO   new_table_name;
+```
+```postgres
+ALTER TABLE table_name
+ADD COLUMN  column_name column_constraint;
+```
+```postgres
+ALTER TABLE table_name
+DROP COLUMN column_name;
+```
+```postgres
+ALTER TABLE   table_name
+RENAME COLUMN column_name TO new_column_name;
+```
+```postgres
+ALTER TABLE  table_name
+ALTER COLUMN column_name
+[ SET DEFAULT default_value | DROP DEFAULT ];
+```
+```postgres
+ALTER TABLE  table_name
+ALTER COLUMN column_name
+[ SET NOT NULL | DROP NOT NULL ];
+```
+```postgres
+ALTER TABLE table_name
+ADD CHECK   validaton_expression;
+```
+```postgres
+ALTER TABLE    table_name
+ADD CONSTRAINT constraint_name constraint_definition;
+```
+
+<br>
+
+An example:
+
+```postgres
+CREATE TABLE links (
+	link_id SERIAL        PRIMARY KEY,
+	title   VARCHAR(512)  NOT NULL,
+	url     VARCHAR(1024) NOT NULL
+);
+```
+| link_id | title | url |
+|---------|-------|-----|
+|         |       |     |
+
+<br>
+
+```postgres
+ALTER TABLE links 
+ADD COLUMN  active BOOLEAN;
+```
+| link_id | title | url | active |
+|---------|-------|-----|--------|
+|         |       |     |        |
+
+<br>
+
+```postgres
+ALTER TABLE links 
+DROP COLUMN active;
+```
+| link_id | title | url |
+|---------|-------|-----|
+|         |       |     |
+
+<br>
+
+```postgres
+ALTER TABLE   links 
+RENAME COLUMN title TO link_title;
+```
+| link_id | link_title | url |
+|---------|------------|-----|
+|         |            |     |
+
+<br>
+
+```postgres
+ALTER TABLE links 
+ADD COLUMN  target VARCHAR(10);
+```
+| link_id | link_title | url | target |
+|---------|------------|-----|--------|
+|         |            |     |        |
+
+
+<br>
+
+```postgres
+ALTER TABLE  links 
+ALTER COLUMN target
+SET DEFAULT  '_blank';
+
+INSERT INTO links (link_title, url)
+VALUES            ('Google', 'http://www.google.com');
+```
+| link_id | link_title | url                   | target |
+|---------|------------|-----------------------|--------|
+|       1 | Google     | http://www.google.com | _blank |
+
+<br>
+
+```postgres
+ALTER TABLE links 
+ADD CHECK   (target IN ('_self', '_blank'));
+
+INSERT INTO links (link_title  , url                        , target     )
+VALUES            ('Microsoft' , 'http://www.microsoft.com' , '_whatever');
+```
+```html
+ERROR: new row for relation "links" violates check constraint "links_target_check"
+Detail: Failing row contains (2, Microsoft, http://www.microsoft.com, _whatever).
+```
+
+
+<br>
+
+```postgres
+ALTER TABLE    links 
+ADD CONSTRAINT unique_url UNIQUE ( url );
+
+INSERT INTO links ( link_title ,  url                    )
+VALUES            ( 'Google'   , 'http://www.google.com' );
+```
+```html
+ERROR: duplicate key value violates unique constraint "unique_url"
+Detail: Key (url)=(http://www.google.com) already exists.
+```
+
+<br>
+
+```postgres
+ALTER TABLE IF EXISTS links 
+RENAME TO             urls;
+
+SELECT *
+FROM   urls;
+```
+| link_id | link_title | url                   | target |
+|---------|------------|-----------------------|--------|
+|       1 | Google     | http://www.google.com | _blank |
+
+
+<hr>
+
+A second example:
+
+```postgres
+CREATE TABLE customer (
+	id            SERIAL  PRIMARY KEY,
+	customer_name VARCHAR NOT NULL
+);
+```
+| id | customer_name |
+|----|---------------|
+|    |               |
+
+<br>
+
+```postgres
+ALTER TABLE customer 
+ADD COLUMN  phone    VARCHAR,
+ADD COLUMN  fax      VARCHAR,
+ADD COLUMN  email    VARCHAR;
+```
+| id | customer_name | phone | fax | email |
+|----|---------------|-------|-----|-------|
+|    |               |       |     |       |
+
+<br>
+
+```postgres
+INSERT INTO customer ( customer_name )
+VALUES               ( 'Apple'       ),
+                     ( 'Samsung'     ),
+                     ( 'Sony'        );
+```
+| id | customer_name | phone  | fax    | email  |
+|----|---------------|--------|--------|--------|
+|  1 | Apple         | [null] | [null] | [null] |
+|  2 | Samsung       | [null] | [null] | [null] |
+|  3 | Sony          | [null] | [null] | [null] |
+
+<br>
+
+```postgres
+ALTER TABLE customer
+ADD COLUMN  contact_name VARCHAR NOT NULL;
+```
+```html
+ERROR: column "contact_name" contains null values
+```
+
+<br>
+
+```postgres
+ALTER TABLE customer
+ADD COLUMN  contact_name VARCHAR;
+
+UPDATE customer 
+SET    contact_name = 'John'
+WHERE  id = 1;
+
+UPDATE customer 
+SET    contact_name = 'Sarah'
+WHERE  id = 2;
+
+UPDATE customer 
+SET    contact_name = 'Bob'
+WHERE  id = 3;
+
+ALTER TABLE  customer 
+ALTER COLUMN contact_name SET NOT NULL;
+```
+| id | customer_name | phone  | fax    | email  | contact_name |
+|----|---------------|--------|--------|--------|--------------|
+|  1 | Apple         | [null] | [null] | [null] | John         |
+|  2 | Samsung       | [null] | [null] | [null] | Sarah        |
+|  3 | Sony          | [null] | [null] | [null] | Bob          |
+
+
+<hr>
+
+A third example:
+
+```postgres
+CREATE TABLE assets (
+    id            SERIAL  PRIMARY KEY,
+    name          TEXT    NOT NULL,
+    asset_no      VARCHAR NOT NULL,
+    description   TEXT,
+    location      TEXT,
+    acquired_date DATE    NOT NULL
+);
+
+INSERT INTO assets( name     , asset_no , location      , acquired_date )
+VALUES            ( 'Server' , '10001'  , 'Server room' , '2017-01-01'  ),
+                  ( 'UPS'    , '10002'  , 'Server room' , '2017-01-01'  );
+```
+```
+┌──────────────────────────┐
+│          asset           │
+├──────────────────────────┤
+│ * id:            INT4    │
+│   name:          TEXT    │
+│   asset_no:      VARCHAR │
+│   description:   TEXT    │
+│   location:      TEXT    │
+│   acquired_date: DATE    │
+└──────────────────────────┘
+```
+
+<br>
+
+
+```postgres
+ALTER TABLE  assets
+ALTER COLUMN name        TYPE VARCHAR(255),
+ALTER COLUMN location    TYPE VARCHAR(255),
+ALTER COLUMN description TYPE VARCHAR(255);
+```
+```
+┌──────────────────────────┐
+│          asset           │
+├──────────────────────────┤
+│ * id:            INT4    │
+│   name:          VARCHAR │
+│   asset_no:      VARCHAR │
+│   description:   VARCHAR │
+│   location:      VARCHAR │
+│   acquired_date: DATE    │
+└──────────────────────────┘
+```
+
+<br>
+
+
+```postgres
+ALTER TABLE  assets 
+ALTER COLUMN asset_no TYPE INT;
+```
+```html
+ERROR: column "asset_no" cannot be cast automatically to type integer
+Hint: You might need to specify "USING asset_no::integer".
+```
+
+<br>
+
+
+```postgres
+ALTER TABLE  assets
+ALTER COLUMN asset_no TYPE INT 
+USING        asset_no::integer;
+```
+```
+┌──────────────────────────┐
+│          asset           │
+├──────────────────────────┤
+│ * id:            INT4    │
+│   name:          VARCHAR │
+│   asset_no:      INT4    │
+│   description:   VARCHAR │
+│   location:      VARCHAR │
+│   acquired_date: DATE    │
+└──────────────────────────┘
+```
+
+### DROP TABLE
+
+An example:
+
+```postgres
+CREATE TABLE publisher (
+    publisher_id SERIAL  PRIMARY KEY,
+    name         VARCHAR NOT NULL
+);
+
+CREATE TABLE category (
+    category_id SERIAL  PRIMARY KEY,
+    name        VARCHAR NOT NULL
+);
+
+CREATE TABLE book (
+    book_id        SERIAL   PRIMARY KEY,
+    title          VARCHAR  NOT NULL,
+    isbn           VARCHAR  NOT NULL,
+    published_date DATE     NOT NULL,
+    description    VARCHAR,
+    category_id    INT      NOT NULL,
+    publisher_id   INT      NOT NULL,
+
+    FOREIGN KEY (publisher_id) REFERENCES publisher (publisher_id),
+    FOREIGN KEY (category_id)  REFERENCES category (category_id)
+);
+```
+```
+                       ┌───────────────────┐
+                       │       book        │
+┌────────────────┐     ├───────────────────┤    ┌───────────────┐
+│   publisher    │     │  * book_id        │    │   category    │
+├────────────────┤     │    title          │    ├───────────────┤
+│ * publisher_id ├────<│    isbn           │>───┤ * category_id │
+│   name         │     │    published_date │    │   name        │
+└────────────────┘     │    description    │    └───────────────┘
+                       │    category_id    │
+                       │    publisher_id   │
+                       └───────────────────┘
+```
+
+<br>
+
+```postgres
+DROP TABLE category;
+```
+```html
+ERROR: cannot drop table category because other objects depend on it
+Detail: constraint book_category_id_fkey on table book depends on table category
+Hint: Use DROP ... CASCADE to drop the dependent objects too.
+```
+
+<br>
+
+```postgres
+DROP TABLE category CASCADE;
+```
+```
+                       ┌───────────────────┐
+                       │       book        │
+┌────────────────┐     ├───────────────────┤
+│   publisher    │     │  * book_id        │
+├────────────────┤     │    title          │
+│ * publisher_id ├────<│    isbn           │
+│   name         │     │    published_date │
+└────────────────┘     │    description    │
+                       │    category_id    │
+                       │    publisher_id   │
+                       └───────────────────┘
+```
+
+<br>
+
+```postgres
+DROP TABLE abc;
+```
+```html
+ERROR: table "abc" does not exist
+```
+
+<br>
+
+```postgres
+DROP TABLE IF EXISTS abc;
+```
+```html
+NOTICE:  table "abc" does not exist, skipping
+```
+
+### TRUNCATE TABLE
+
+To remove all the data from a big table, we could the `DELETE` statement followed by a `VACUMM` operation to reclaim the storage occupied by the removed data.
+
+However, the `TRUNCATE TABLE` is <u>*more efficient*</u>, as it *erases the table without scanning it*. It also *reclaims the store right away*, making the `VACUMM` operation unnecessary.
+
+## Temporary tables
+
+We can create *temporary tables* that are *visible only to the session* that creates it. These tables are *automatically dropped* when the session ends.
+
+Temprary tables can share the same name with a permanent table, but it is not recommended:
+
+```postgres
+CREATE TABLE customer (
+	id   INT          GENERATED ALWAYS AS IDENTITY,
+	name VARCHAR(255) NOT NULL
+);
+
+INSERT INTO customer ( name    )
+VALUES               ( 'Bob'   ), 
+                     ( 'John'  ),
+                     ( 'Sarah' );
+                     
+SELECT *
+FROM customer;
+```
+| id | name  |
+|----|-------|
+|  1 | Bob   |
+|  2 | John  |
+|  3 | Sarah |
+
+<br>
+
+```postgres
+CREATE TEMP TABLE customer (
+	temp_id INT
+);
+
+SELECT *
+FROM   customer;
+```
+| temp_id |
+|---------|
+|         |
+
+<br>
+
+```postgres
+DROP TABLE customer;
+
+SELECT *
+FROM customer;
+```
+| id | name  |
+|----|-------|
+|  1 | Bob   |
+|  2 | John  |
+|  3 | Sarah |
+
+## Table copies
+
+An example:
+
+```postgres
+CREATE TABLE car (
+	id    SERIAL        PRIMARY KEY,
+	make  VARCHAR(255),
+	model VARCHAR(255)
+);
+
+INSERT INTO car ( make            , model    )
+VALUES          ( 'BMW'           , 'M5'     )
+                ( 'Porsche'       , '911'    ),
+                ( 'Mercedes-Benz' , 'AMG GT' );
+   
+SELECT *
+FROM car;
+```
+| id |     make      | model  |
+|----|---------------|--------|
+|  1 | BMW           | M5     |
+|  2 | Porsche       | 911    |
+|  3 | Mercedes-Benz | AMG GT |
+
+<br>
+
+```postgres
+CREATE TABLE car_backup
+AS TABLE     car;
+
+SELECT *
+FROM   car_backup;
+```
+| id |     make      | model  |
+|----|---------------|--------|
+|  1 | BMW           | M5     |
+|  2 | Porsche       | 911    |
+|  3 | Mercedes-Benz | AMG GT |
+
+<br>
+
+```postgres
+CREATE TABLE car_backup_2
+AS TABLE     car
+
+WITH NO DATA;
+
+SELECT *
+FROM   car_backup_2;
+```
+| id |     make      | model  |
+|----|---------------|--------|
+|    |               |        |
+
+<br>
+
+```postgres
+CREATE TABLE porsche AS
+SELECT *
+FROM   car
+WHERE  make = 'Porsche';
+
+SELECT *
+FROM porsche;
+```
+| id |     make      | model  |
+|----|---------------|--------|
+|  2 | Porsche       | 911    |
+
+
+<br>
+
+```postgres
+```
+| | |
+
+<br>
+
+```postgres
+```
+| | |
+
+<br>
+
+
 
 # Sequences
 
