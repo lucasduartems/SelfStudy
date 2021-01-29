@@ -219,7 +219,7 @@ Makes sure that no NULL values are added to the column.
 
 Example table creation with constraints:
 
-```postgres
+```sql
 CRETE TABLE car (
     car_id  SERIAL       PRIMARY KEY,
     make_id INT,
@@ -242,7 +242,7 @@ More on table creation in the [next section](#create).
 
 Tables can be created with the `CREATE TABLE` commands:
 
-```postgres
+```sql
 CREATE TABLE [IF NOT EXISTS] table_name (
     column1 DATATYPE(length) column_constraint,
     column2 DATATYPE(length) column_constraint,
@@ -255,7 +255,7 @@ CREATE TABLE [IF NOT EXISTS] table_name (
 
 An example:
 
-```postgres
+```sql
 CREATE TABLE account (
 	user_id    SERIAL       PRIMARY KEY,
 	username   VARCHAR(50)  UNIQUE NOT NULL,
@@ -328,14 +328,14 @@ Using the `film` table from the `dvdrental` database as an example:
 
 <br>
 
-```postgres
+```sql
 SELECT     film_id, title, rental_rate
 INTO TABLE film_r
 FROM       film
 WHERE      rating = 'R' AND rental_duration = 5
 ORDER BY   title;
 ```
-```postgres
+```sql
 SELECT * FROM film_r
 ```
 | film_id |        title        | rental_rate |
@@ -353,7 +353,7 @@ SELECT * FROM film_r
 
 An equivalent to the previous example with [`SELECT INTO`](#select-into):
 
-```postgres
+```sql
 CREATE TABLE film_r AS
 SELECT       film_id, title, rental_rate
 FROM         film
@@ -369,7 +369,7 @@ ORDER BY     title;
 
 `GENERATED ALWAYS` instructs PostgreSQL to generate a value for the identity column. The values cannot be inserted nor updated:
 
-```postgres
+```sql
 CREATE TABLE color (
     color_id   INT          GENERATED ALWAYS AS IDENTITY
     color_name VARCHAR(255) NOT NULL
@@ -382,37 +382,37 @@ CREATE TABLE color (
 
 Examples of changing actions:
 
-```postgres
+```sql
 ALTER TABLE table_name
 RENAME TO   new_table_name;
 ```
-```postgres
+```sql
 ALTER TABLE table_name
 ADD COLUMN  column_name column_constraint;
 ```
-```postgres
+```sql
 ALTER TABLE table_name
 DROP COLUMN column_name;
 ```
-```postgres
+```sql
 ALTER TABLE   table_name
 RENAME COLUMN column_name TO new_column_name;
 ```
-```postgres
+```sql
 ALTER TABLE  table_name
 ALTER COLUMN column_name
 [ SET DEFAULT default_value | DROP DEFAULT ];
 ```
-```postgres
+```sql
 ALTER TABLE  table_name
 ALTER COLUMN column_name
 [ SET NOT NULL | DROP NOT NULL ];
 ```
-```postgres
+```sql
 ALTER TABLE table_name
 ADD CHECK   validaton_expression;
 ```
-```postgres
+```sql
 ALTER TABLE    table_name
 ADD CONSTRAINT constraint_name constraint_definition;
 ```
@@ -421,7 +421,7 @@ ADD CONSTRAINT constraint_name constraint_definition;
 
 An example:
 
-```postgres
+```sql
 CREATE TABLE links (
 	link_id SERIAL        PRIMARY KEY,
 	title   VARCHAR(512)  NOT NULL,
@@ -434,7 +434,7 @@ CREATE TABLE links (
 
 <br>
 
-```postgres
+```sql
 ALTER TABLE links 
 ADD COLUMN  active BOOLEAN;
 ```
@@ -444,7 +444,7 @@ ADD COLUMN  active BOOLEAN;
 
 <br>
 
-```postgres
+```sql
 ALTER TABLE links 
 DROP COLUMN active;
 ```
@@ -454,7 +454,7 @@ DROP COLUMN active;
 
 <br>
 
-```postgres
+```sql
 ALTER TABLE   links 
 RENAME COLUMN title TO link_title;
 ```
@@ -464,7 +464,7 @@ RENAME COLUMN title TO link_title;
 
 <br>
 
-```postgres
+```sql
 ALTER TABLE links 
 ADD COLUMN  target VARCHAR(10);
 ```
@@ -475,7 +475,7 @@ ADD COLUMN  target VARCHAR(10);
 
 <br>
 
-```postgres
+```sql
 ALTER TABLE  links 
 ALTER COLUMN target
 SET DEFAULT  '_blank';
@@ -489,7 +489,7 @@ VALUES            ('Google', 'http://www.google.com');
 
 <br>
 
-```postgres
+```sql
 ALTER TABLE links 
 ADD CHECK   (target IN ('_self', '_blank'));
 
@@ -504,7 +504,7 @@ Detail: Failing row contains (2, Microsoft, http://www.microsoft.com, _whatever)
 
 <br>
 
-```postgres
+```sql
 ALTER TABLE    links 
 ADD CONSTRAINT unique_url UNIQUE ( url );
 
@@ -518,7 +518,7 @@ Detail: Key (url)=(http://www.google.com) already exists.
 
 <br>
 
-```postgres
+```sql
 ALTER TABLE IF EXISTS links 
 RENAME TO             urls;
 
@@ -534,7 +534,7 @@ FROM   urls;
 
 A second example:
 
-```postgres
+```sql
 CREATE TABLE customer (
 	id            SERIAL  PRIMARY KEY,
 	customer_name VARCHAR NOT NULL
@@ -546,7 +546,7 @@ CREATE TABLE customer (
 
 <br>
 
-```postgres
+```sql
 ALTER TABLE customer 
 ADD COLUMN  phone    VARCHAR,
 ADD COLUMN  fax      VARCHAR,
@@ -558,7 +558,7 @@ ADD COLUMN  email    VARCHAR;
 
 <br>
 
-```postgres
+```sql
 INSERT INTO customer ( customer_name )
 VALUES               ( 'Apple'       ),
                      ( 'Samsung'     ),
@@ -572,7 +572,7 @@ VALUES               ( 'Apple'       ),
 
 <br>
 
-```postgres
+```sql
 ALTER TABLE customer
 ADD COLUMN  contact_name VARCHAR NOT NULL;
 ```
@@ -582,7 +582,7 @@ ERROR: column "contact_name" contains null values
 
 <br>
 
-```postgres
+```sql
 ALTER TABLE customer
 ADD COLUMN  contact_name VARCHAR;
 
@@ -612,7 +612,7 @@ ALTER COLUMN contact_name SET NOT NULL;
 
 A third example:
 
-```postgres
+```sql
 CREATE TABLE assets (
     id            SERIAL  PRIMARY KEY,
     name          TEXT    NOT NULL,
@@ -642,7 +642,7 @@ VALUES            ( 'Server' , '10001'  , 'Server room' , '2017-01-01'  ),
 <br>
 
 
-```postgres
+```sql
 ALTER TABLE  assets
 ALTER COLUMN name        TYPE VARCHAR(255),
 ALTER COLUMN location    TYPE VARCHAR(255),
@@ -664,7 +664,7 @@ ALTER COLUMN description TYPE VARCHAR(255);
 <br>
 
 
-```postgres
+```sql
 ALTER TABLE  assets 
 ALTER COLUMN asset_no TYPE INT;
 ```
@@ -676,7 +676,7 @@ Hint: You might need to specify "USING asset_no::integer".
 <br>
 
 
-```postgres
+```sql
 ALTER TABLE  assets
 ALTER COLUMN asset_no TYPE INT 
 USING        asset_no::integer;
@@ -698,7 +698,7 @@ USING        asset_no::integer;
 
 An example:
 
-```postgres
+```sql
 CREATE TABLE publisher (
     publisher_id SERIAL  PRIMARY KEY,
     name         VARCHAR NOT NULL
@@ -738,7 +738,7 @@ CREATE TABLE book (
 
 <br>
 
-```postgres
+```sql
 DROP TABLE category;
 ```
 ```html
@@ -749,7 +749,7 @@ Hint: Use DROP ... CASCADE to drop the dependent objects too.
 
 <br>
 
-```postgres
+```sql
 DROP TABLE category CASCADE;
 ```
 ```
@@ -768,7 +768,7 @@ DROP TABLE category CASCADE;
 
 <br>
 
-```postgres
+```sql
 DROP TABLE abc;
 ```
 ```html
@@ -777,7 +777,7 @@ ERROR: table "abc" does not exist
 
 <br>
 
-```postgres
+```sql
 DROP TABLE IF EXISTS abc;
 ```
 ```html
@@ -796,7 +796,7 @@ We can create *temporary tables* that are *visible only to the session* that cre
 
 Temprary tables can share the same name with a permanent table, but it is not recommended:
 
-```postgres
+```sql
 CREATE TABLE customer (
 	id   INT          GENERATED ALWAYS AS IDENTITY,
 	name VARCHAR(255) NOT NULL
@@ -818,7 +818,7 @@ FROM customer;
 
 <br>
 
-```postgres
+```sql
 CREATE TEMP TABLE customer (
 	temp_id INT
 );
@@ -832,7 +832,7 @@ FROM   customer;
 
 <br>
 
-```postgres
+```sql
 DROP TABLE customer;
 
 SELECT *
@@ -848,7 +848,7 @@ FROM customer;
 
 An example:
 
-```postgres
+```sql
 CREATE TABLE car (
 	id    SERIAL        PRIMARY KEY,
 	make  VARCHAR(255),
@@ -871,7 +871,7 @@ FROM car;
 
 <br>
 
-```postgres
+```sql
 CREATE TABLE car_backup
 AS TABLE     car;
 
@@ -886,7 +886,7 @@ FROM   car_backup;
 
 <br>
 
-```postgres
+```sql
 CREATE TABLE car_backup_2
 AS TABLE     car
 
@@ -901,7 +901,7 @@ FROM   car_backup_2;
 
 <br>
 
-```postgres
+```sql
 CREATE TABLE porsche AS
 SELECT *
 FROM   car
@@ -917,13 +917,13 @@ FROM porsche;
 
 <br>
 
-```postgres
+```sql
 ```
 | | |
 
 <br>
 
-```postgres
+```sql
 ```
 | | |
 
@@ -937,7 +937,7 @@ A sequence is an ordered list of integers, such as `{1,2,3,4,5}` and `{5,4,3,2,1
 
 Sequences can be created in PostgreSQL with the `CREATE SEQUENCE` command:
 
-```postgres
+```sql
 CREATE SEQUENCE [ IF NOT EXISTS ] sequence_name
 [ AS { SMALLINT | INT | BIGINT } ]
 [ INCREMENT [ BY ] increment_value ]
@@ -953,7 +953,7 @@ CREATE SEQUENCE [ IF NOT EXISTS ] sequence_name
 
 Example:
 
-```postgres
+```sql
 CREATE SEQUENCE mysequence
 INCREMENT 5
 MAXVALUE 15
@@ -962,7 +962,7 @@ CYCLE;
 
 <br>
 
-```postgres
+```sql
 SELECT nextval('mysequence');
 ```
 | nextval |
@@ -971,7 +971,7 @@ SELECT nextval('mysequence');
 
 <br>
 
-```postgres
+```sql
 SELECT nextval('mysequence');
 ```
 | nextval |
@@ -980,7 +980,7 @@ SELECT nextval('mysequence');
 
 <br>
 
-```postgres
+```sql
 SELECT nextval('mysequence');
 ```
 | nextval |
@@ -988,7 +988,7 @@ SELECT nextval('mysequence');
 |      11 |
 <br>
 
-```postgres
+```sql
 SELECT nextval('mysequence');
 ```
 | nextval |
@@ -1016,7 +1016,7 @@ If a sequence is associated with (`OWNED BY`) a table column, it will be dropped
 
 ### FROM
 
-```postgres
+```sql
 SELECT columns
 FROM   table
 ```
@@ -1032,7 +1032,7 @@ Order of evaluation:
 
 #### Specific columns
 
-```postgres
+```sql
 SELECT first_name
 FROM customer;
 ```
@@ -1047,7 +1047,7 @@ FROM customer;
 
 <br>
 
-```postgres
+```sql
 SELECT first_name, last_name
 FROM customer;
 ```
@@ -1064,7 +1064,7 @@ FROM customer;
 
 #### All columns
 
-```postgres
+```sql
 SELECT * FROM customer;
 ```
 | customer_id | store_id | first_name | last_name |                email                | . . . |
@@ -1084,7 +1084,7 @@ The use of `*` in the `SELECT` statement is discouraged due to the possible impa
 
 #### Concatenation
 
-```postgres
+```sql
 SELECT first_name || ', ' || last_name, email
 FROM customer;
 ```
@@ -1101,7 +1101,7 @@ FROM customer;
 
 #### Expressions
 
-```postgres
+```sql
 SELECT 2 * 3;
 ```
 | ?column? |
@@ -1112,7 +1112,7 @@ SELECT 2 * 3;
 
 #### Column alias
 
-```postgres
+```sql
 SELECT first_name, last_name AS surname
 FROM customer;
 ```
@@ -1129,7 +1129,7 @@ FROM customer;
 
 #### Expression alias
 
-```postgres
+```sql
 SELECT first_name || ' ' || last_name AS full_name
 FROM customer;
 ```
@@ -1145,7 +1145,7 @@ FROM customer;
 
 <br>
 
-```postgres
+```sql
 SELECT first_name || ' ' || last_name AS "Full name"
 FROM customer;
 ```
@@ -1164,7 +1164,7 @@ FROM customer;
 
 ### ORDER BY
 
-```postgres
+```sql
 SELECT   columns
 FROM     table
 ORDER BY sort_expression
@@ -1182,7 +1182,7 @@ Order of evaluation:
 
 <br>
 
-```postgres
+```sql
 SELECT first_name, last_name AS full_name
 FROM customer
 ORDER BY first_name ASC;
@@ -1200,7 +1200,7 @@ ORDER BY first_name ASC;
 
 #### ASC, DESC
 
-```postgres
+```sql
 SELECT first_name, last_name AS full_name
 FROM customer
 ORDER BY first_name ASC, last_name DESC;
@@ -1218,7 +1218,7 @@ ORDER BY first_name ASC, last_name DESC;
 
 <br>
 
-```postgres
+```sql
 SELECT first_name, LENGTH(first_name) AS len
 FROM customer
 ORDER BY len;
@@ -1236,7 +1236,7 @@ ORDER BY len;
 
 #### NULLS FIRST, NULLS LAST
 
-```postgres
+```sql
 SELECT number
 FROM some_table
 ORDER BY number NULLS FIRST;
@@ -1252,7 +1252,7 @@ ORDER BY number NULLS FIRST;
 
 ### DISTINCT
 
-```postgres
+```sql
 SELECT DISTINCT column
 FROM            table
 ```
@@ -1267,7 +1267,7 @@ The following examples take the example `colors` table below into consideration:
 
 #### DISTINCT single column
 
-```postgres
+```sql
 SELECT DISTINCT background
 FROM colors
 ORDER BY background;
@@ -1280,7 +1280,7 @@ ORDER BY background;
 
 Select the distinct `background, foreground` combinations:
 
-```postgres
+```sql
 SELECT DISTINCT background, foreground
 FROM colors
 ORDER BY background, foreground;
@@ -1291,7 +1291,7 @@ ORDER BY background, foreground;
 
 #### DISTINCT ON
 
-```postgres
+```sql
 SELECT DISTINCT ON (background) background, foreground
 FROM colors;
 ```
@@ -1299,7 +1299,7 @@ FROM colors;
 
 <br>
 
-```postgres
+```sql
 SELECT DISTINCT ON (background) background, foreground
 FROM colors
 ORDER BY background, foreground;
@@ -1318,7 +1318,7 @@ It is a good practice to use `ORDER BY` with `DISTINCT ON (expression)` to make 
 
 <br>
 
-```postgres
+```sql
 SELECT DISTINCT ON (foreground) background, foreground
 FROM colors;
 ```
@@ -1328,7 +1328,7 @@ FROM colors;
 
 ### WHERE
 
-```postgres
+```sql
 SELECT   columns
 FROM     table
 WHERE    condition
@@ -1349,7 +1349,7 @@ The following examples refer to the `dvd rental` database once again:
 
 #### Simple filter clause
 
-```postgres
+```sql
 SELECT last_name, first_name
 FROM customer
 WHERE first_name = 'Jamie';
@@ -1363,7 +1363,7 @@ WHERE first_name = 'Jamie';
 
 #### AND, OR
 
-```postgres
+```sql
 SELECT last_name, first_name
 FROM customer
 WHERE first_name = 'Jamie' AND last_name = 'Rice';
@@ -1374,7 +1374,7 @@ WHERE first_name = 'Jamie' AND last_name = 'Rice';
 
 <br>
 
-```postgres
+```sql
 SELECT first_name, last_name
 FROM customer
 WHERE last_name = 'Rodriguez' OR first_name = 'Adam';
@@ -1388,7 +1388,7 @@ WHERE last_name = 'Rodriguez' OR first_name = 'Adam';
 
 #### IN
 
-```postgres
+```sql
 SELECT first_name, last_name
 FROM customer
 WHERE first_name IN ('Ann', 'Anne', 'Annie');
@@ -1403,7 +1403,7 @@ WHERE first_name IN ('Ann', 'Anne', 'Annie');
 
 PostgreSQL executes the `IN` operator *faster* than the equivalent query with `OR` operators.
 
-```postgres
+```sql
 SELECT first_name, last_name
 FROM customer
 WHERE first_name NOT IN ('Ann', 'Anne', 'Annie');
@@ -1419,7 +1419,7 @@ WHERE first_name NOT IN ('Ann', 'Anne', 'Annie');
 
 <br>
 
-```postgres
+```sql
 SELECT customer_id, first_name, last_name
 FROM customer
 WHERE customer_id IN (
@@ -1442,7 +1442,7 @@ ORDER BY customer_id;
 
 #### LIKE
 
-```postgres
+```sql
 SELECT first_name, last_name
 FROM customer
 WHERE first_name LIKE 'Ann%';
@@ -1459,7 +1459,7 @@ WHERE first_name LIKE 'Ann%';
 
 ##### PostgreSQL ILIKE
 
-```postgres
+```sql
 SELECT first_name, last_name
 FROM customer
 WHERE first_name ILIKE 'aNN%';
@@ -1476,7 +1476,7 @@ WHERE first_name ILIKE 'aNN%';
 
 ##### PostgreSQL operators
 
-```postgres
+```sql
 SELECT first_name, last_name
 FROM customer
 WHERE first_name ~~ 'Ann%';
@@ -1500,7 +1500,7 @@ WHERE first_name ~~ 'Ann%';
 
 <br>
 
-```postgres
+```sql
 SELECT first_name, last_name
 FROM customer
 WHERE first_name LIKE 'Ann%' AND first_name != 'Anne';
@@ -1530,7 +1530,7 @@ In the example above, `Ann%` is equivalent to the *`Ann`* followed by *`zero or 
 
 #### BETWEEN
 
-```postgres
+```sql
 SELECT first_name, LENGTH(first_name) AS name_length
 FROM customer
 WHERE first_name LIKE 'A%' AND LENGTH(first_name) BETWEEN 3 AND 5
@@ -1547,7 +1547,7 @@ ORDER BY name_length;
 
 <br>
 
-```postgres
+```sql
 SELECT customer_id, payment_id, amount, payment_date
 FROM payment
 WHERE payment_date NOT BETWEEN '2007-02-07' AND '2007-02-15'
@@ -1585,7 +1585,7 @@ WHERE payment_date NOT BETWEEN '2007-02-07' AND '2007-02-15'
 
 ### LIMIT
 
-```postgres
+```sql
 SELECT   columns
 FROM     table
 ORDER BY sort_expression
@@ -1594,7 +1594,7 @@ LIMIT    row_count
 
 <br>
 
-```postgres
+```sql
 SELECT film_id, title, release_year
 FROM film
 ORDER BY film_id
@@ -1616,7 +1616,7 @@ We should always use `LIMIT` together with `ORDER BY`, as *tables store rows in 
 
 #### OFFSET
 
-```postgres
+```sql
 SELECT film_id, title, release_year
 FROM film
 ORDER BY film_id
@@ -1634,7 +1634,7 @@ LIMIT 5 OFFSET 3;
 
 #### Top/bottom rows
 
-```postgres
+```sql
 SELECT film_id, title, rental_rate
 FROM film
 ORDER BY rental_rate DESC
@@ -1661,7 +1661,7 @@ Altough [LIMIT](#limit) is used by PostgreSQL, MySQL, H2, etc., it is not a SQL 
 
 The `FETCH` clase is equivalent and conforms to SQL standards:
 
-```postgres
+```sql
 SELECT      columns
 FROM        table
 ORDER BY    sort_expression
@@ -1672,7 +1672,7 @@ FETCH FIRST row_count ROWS ONLY;
 <br>
 <br>
 
-```postgres
+```sql
 SELECT film_id, title
 FROM film
 ORDER BY title
@@ -1695,7 +1695,7 @@ Again, `FETCH` should always be used together with `ORDER BY`, as *rows are stor
 
 ### GROUP BY
 
-```postgres
+```sql
 SELECT   columns
 FROM     table
 GROUP BY columns
@@ -1741,7 +1741,7 @@ Order of evaluation:
 
 <br>
 
-```postgres
+```sql
 SELECT customer_id
 FROM payment
 GROUP BY customer_id
@@ -1761,7 +1761,7 @@ The qeury above works like the `DISINCT` clause, as it removes any duplicate `cu
 
 #### Aggregate functions
 
-```postgres
+```sql
 SELECT customer_id, SUM(amount)
 FROM payment
 GROUP BY customer_id;
@@ -1777,7 +1777,7 @@ GROUP BY customer_id;
 
 <br>
 
-```postgres
+```sql
 SELECT customer_id, SUM(amount)
 FROM payment
 GROUP BY customer_id
@@ -1795,7 +1795,7 @@ ORDER BY SUM(amount) DESC;
 
 <br>
 
-```postgres
+```sql
 SELECT
 	first_name || ' ' || last_name AS full_name,
 	SUM(amount) AS total_spent
@@ -1822,7 +1822,7 @@ For info on *joins* see the [JOIN](#join) section.
 
 <br>
 
-```postgres
+```sql
 SELECT staff_id, COUNT(payment_id)
 FROM payment
 GROUP BY staff_id
@@ -1834,7 +1834,7 @@ GROUP BY staff_id
 
 <br>
 
-```postgres
+```sql
 SELECT customer_id, staff_id, SUM(amount) AS total_spent
 FROM payment
 GROUP BY staff_id, customer_id
@@ -1858,7 +1858,7 @@ In the query above, `total_spent` is calculated for every <u>*`(customer_id, sta
 
 <br>
 
-```postgres
+```sql
 SELECT DATE(payment_date), sum(amount)
 FROM payment
 GROUP BY DATE(payment_date)
@@ -1875,7 +1875,7 @@ ORDER BY DATE(payment_date);
 
 #### HAVING
 
-```postgres
+```sql
 SELECT   columns
 FROM     table
 GROUP BY columns
@@ -1924,7 +1924,7 @@ Order of evaluation:
 
 While [`WHERE`](#where) allows us to filter *<u>rows</u>*, `HAVING` allows us to filter *<u>groups of rows</u>*:
 
-```postgres
+```sql
 SELECT customer_id, SUM(amount)
 FROM payment
 GROUP BY customer_id
@@ -1941,7 +1941,7 @@ The query above calculates the total amount each customer has spent and ignores 
 
 <br>
 
-```postgres
+```sql
 SELECT store_id, count(customer_id)
 FROM customer
 GROUP BY store_id
@@ -1974,7 +1974,7 @@ Taking the two tables below as an example:
 We can combine the results of both tables, if the *<u>number and order</u>* of the columns are the same and the *<u>data types</u>* are compatible:
 
 ![](images/full_join.png)
-```postgres
+```sql
 SELECT *
 FROM top_rated_films
 
@@ -1995,7 +1995,7 @@ FROM most_popular_films;
 
 To keep duplicates:
 
-```postgres
+```sql
 SELECT *
 FROM top_rated_films
 
@@ -2015,7 +2015,7 @@ FROM most_popular_films;
 
 <br>
 
-```postgres
+```sql
 SELECT *
 FROM top_rated_films
 
@@ -2057,7 +2057,7 @@ Taking the `top_rated_films` and `most_popular_films` tables as an example once 
 We can once combine the results of [`SELECT`](#select) statements (if the *<u>number and order</u>* of the columns are the same and the *<u>data types</u>* are compatible) and *keep only the rows available in both* result sets:
 
 ![](images/inner_join.png)
-```postgres
+```sql
 SELECT *
 FROM top_rated_films
 
@@ -2094,7 +2094,7 @@ Using the same film tables once again:
 We can combine them using `EXCEPT`:
 
 ![](images/left_join_left_only.png)
-```postgres
+```sql
 SELECT *
 FROM top_rated_films
 
@@ -2133,7 +2133,7 @@ The queries shown below correspond to:
  - Products sold by `segment`;
  - Number of products sold;
 
-```postgres
+```sql
 -- Products sold by (brand, segment) combinations
 
 SELECT brand, segment, SUM(quantity)
@@ -2149,7 +2149,7 @@ GROUP BY brand, segment;
 
 <br>
 
-```postgres
+```sql
 -- Products sold by brand
 
 SELECT brand, SUM(quantity)
@@ -2164,7 +2164,7 @@ GROUP BY brand;
 
 <br>
 
-```postgres
+```sql
 -- Products sold by segment
 
 SELECT segment, SUM(quantity)
@@ -2178,7 +2178,7 @@ GROUP BY segment;
 
 <br>
 
-```postgres
+```sql
 -- Number of products sold
 SELECT SUM(quantity)
 FROM sales;
@@ -2191,7 +2191,7 @@ FROM sales;
 
 We could combine the four result sets above by using `UNION ALL` clauses:
 
-```postgres
+```sql
 SELECT brand, segment, SUM(quantity)
 FROM sales
 GROUP BY brand, segment
@@ -2229,7 +2229,7 @@ FROM sales
 
 The query shown above is quite big. It could be rewritten with `GROUPING SETS`, which is more readable and has an optimized execution performance:
 
-```postgres
+```sql
 SELECT brand, segment, SUM(quantity)
 FROM sales
 GROUP BY GROUPING SETS ((brand, segment), (brand), (segment), ());
@@ -2259,7 +2259,7 @@ Taking the `sales` table as an example once again:
 
 <br>
 
-```postgres
+```sql
 SELECT
 	GROUPING(brand) AS grp_brand,
 	GROUPING(segment) AS grp_segment,
@@ -2289,7 +2289,7 @@ We can see from the example above that `GROUPING` is a function that returns:
 
 We could add a `HAVING` clause to the query to find the *subtotal* of each brand:
 
-```postgres
+```sql
 SELECT
 	GROUPING(brand) AS grp_brand,
 	GROUPING(segment) AS grp_segment,
@@ -2312,7 +2312,7 @@ ORDER BY brand, segment;
 
 The following statements are equivalent:
 
-```postgres
+```sql
 CUBE(a, b, c)
 
 GROUPING SETS ((a, b, c), (a, b), (a, c), (b, c), (a), (b), (c), ())
@@ -2331,7 +2331,7 @@ The examples in this section will use the `sales` table below as example once ag
 
 <br>
 
-```postgres
+```sql
 SELECT brand, segment, SUM (quantity)
 FROM sales
 GROUP BY CUBE (brand, segment)
@@ -2353,7 +2353,7 @@ We can identify the groups generate by `CUBE` in the results above: `(brand, seg
 
 <br>
 
-```postgres
+```sql
 SELECT brand, segment, SUM (quantity)
 FROM sales
 GROUP BY brand, CUBE (segment)
@@ -2378,7 +2378,7 @@ For each `brand` (`ABC`, `XYZ`) we cann see all the possible values of `segment`
 
 However, `ROLLUP` does not generate all possible [`GROUPING SETS`](#grouping-sets), but *<u>assumes a hierarchy</u>* among the specified columns:
 
-```postgres
+```sql
 CUBE(a, b, c)  →  (a, b, c)                 ROLLUP(a, b, c)  →  (a, b, c)
                   (a, b)                                        (a, b)
                   (a, c)                                        (a)
@@ -2408,7 +2408,7 @@ Using the `sales` table once again:
 
 <br>
 
-```postgres
+```sql
 SELECT brand, segment, SUM (quantity)
 FROM sales
 GROUP BY ROLLUP (brand, segment)
@@ -2436,7 +2436,7 @@ The 9<sup>th</sup> row brings the *grand total* for all brands.
 
 Comparing with [`CUBE`](#cube):
 
-```postgres
+```sql
 SELECT                                      SELECT
     brand,                                      brand,
     segment,                                    segment,
@@ -2484,7 +2484,7 @@ Taking the `rental` table from the `dvd rental` database as an example:
 
 <br>
 
-```postgres
+```sql
 SELECT
 	EXTRACT (YEAR  FROM rental_date) AS y,
 	EXTRACT (MONTH FROM rental_date) AS m,
@@ -2542,7 +2542,7 @@ The join examples below are based on the following `color_a` and `color_b` table
 
 <br>
 
-```postgres
+```sql
 SELECT *
 FROM color_a INNER JOIN color_b
 ON color_a.color = color_b.color;
@@ -2553,7 +2553,7 @@ ON color_a.color = color_b.color;
 <br>
 <br>
 
-```postgres
+```sql
 SELECT *
 FROM color_b INNER JOIN color_a
 ON color_a.color = color_b.color;
@@ -2564,7 +2564,7 @@ ON color_a.color = color_b.color;
 
 ##### Table alias
 
-```postgres
+```sql
 SELECT A.color
 FROM color_a A INNER JOIN color_b B
 ON A.color = B.color
@@ -2576,7 +2576,7 @@ ORDER BY A.color;
 
 ##### USING
 
-```postgres
+```sql
 SELECT color
 FROM color_a INNER JOIN color_b
 USING(color);
@@ -2621,7 +2621,7 @@ The `dvd rental` brings the following table relationships:
 
 If we want to list all `payment`s, with the corresponding `customer` and `staff` member, we can *join 3 tables*:
 
-```postgres
+```sql
 SELECT
 	payment.payment_id,
 	customer.first_name || ' ' || customer.last_name AS customer_name,
@@ -2658,7 +2658,7 @@ FROM
 
 <br>
 
-```postgres
+```sql
 SELECT *
 FROM color_a LEFT JOIN color_b
 ON color_a.color = color_b.color;
@@ -2677,7 +2677,7 @@ ON color_a.color = color_b.color;
 
 <br>
 
-```postgres
+```sql
 SELECT *
 FROM color_a LEFT JOIN color_b
 ON color_a.color = color_b.color
@@ -2697,7 +2697,7 @@ WHERE color_b.id IS NULL;
 
 <br>
 
-```postgres
+```sql
 SELECT *
 FROM color_a RIGHT JOIN color_b
 ON color_a.color = color_b.color;
@@ -2716,7 +2716,7 @@ ON color_a.color = color_b.color;
 
 <br>
 
-```postgres
+```sql
 SELECT *
 FROM color_a RIGHT JOIN color_b
 ON color_a.color = color_b.color
@@ -2736,7 +2736,7 @@ WHERE color_a.id IS NULL;
 
 <br>
 
-```postgres
+```sql
 SELECT *
 FROM color_a FULL JOIN color_b
 ON color_a.color = color_b.color;
@@ -2755,7 +2755,7 @@ ON color_a.color = color_b.color;
 
 <br>
 
-```postgres
+```sql
 SELECT *
 FROM color_a FULL JOIN color_b
 ON color_a.color = color_b.color
@@ -2788,7 +2788,7 @@ The following example tables show employees and departments. Each department can
 
 To have an overview of the `employee` &harr; `department` relationships we can use the following query:
 
-```postgres
+```sql
 SELECT employee_name, department_name
 FROM employees e FULL JOIN departments d
 ON d.department_id = e.department_id;
@@ -2807,7 +2807,7 @@ ON d.department_id = e.department_id;
 
 To find the department that doen not have any employees we can use the following query:
 
-```postgres
+```sql
 SELECT employee_name, department_name
 FROM employees e FULL JOIN departments d
 ON d.department_id = e.department_id
@@ -2821,7 +2821,7 @@ WHERE employee_name IS NULL;
 
 And to find the employee that does not belong to any department:
 
-```postgres
+```sql
 SELECT employee_name, department_name
 FROM employees e FULL JOIN departments d
 ON d.department_id = e.department_id
@@ -2833,7 +2833,7 @@ WHERE department_name IS NULL;
 
 #### Self join
 
-```postgres
+```sql
 SELECT a1.color AS "Color 1", a2.color AS "Color 2"
 FROM color_a a1 INNER JOIN color_a a2
 ON a1.color = a2.color;
@@ -2886,7 +2886,7 @@ Windy Hays is the top manager and reports to nobody.
 
 The following *self join* query shows who reports to whom:
 
-```postgres
+```sql
 SELECT   e.first_name || ' ' || e.last_name AS employee,
 	     m.first_name || ' ' || m.last_name AS manager
 
@@ -2910,7 +2910,7 @@ ORDER BY manager;
 
 To show the top manager, we can use `LEFT JOIN` instead of `INNER JOIN`:
 
-```postgres
+```sql
 SELECT   e.first_name || ' ' || e.last_name AS employee,
 	     m.first_name || ' ' || m.last_name AS manager
 
@@ -2958,7 +2958,7 @@ Taking the `film` table from the `dvd rental` database as an example:
 
 We can use the following query to find pairs of films that have the same length:
 
-```postgres
+```sql
 SELECT f1.title, f2.title, f1.length
 FROM film f1 INNER JOIN film f2
 ON f1.film_id != f2.film_id AND f1.length = f2.length;
@@ -3000,7 +3000,7 @@ We can use the `CROSS JOIN` to produce the *cartesian product* of two or more ta
 
 The SQL query is as simple as:
 
-```postgres
+```sql
 SELECT *
 FROM T1 CROSS JOIN T2;
 ```
@@ -3017,15 +3017,15 @@ FROM T1 CROSS JOIN T2;
 
 The following queries are equivalent:
 
-```postgres
+```sql
 SELECT *
 FROM T1 CROSS JOIN T2;
 ```
-```postgres
+```sql
 SELECT *
 FROM T1, T2;
 ```
-```postgres
+```sql
 SELECT *
 FROM T1 INNER JOIN T2
 ON true;
@@ -3056,7 +3056,7 @@ We can then join the tables *without specifying the join clause* with `NATURAL J
 
 `NATURAL JOIN` uses the *implicit join clause based on the common column* (`category_id`):
 
-```postgres
+```sql
 SELECT *
 FROM products NATURAL JOIN categories;
 ```
@@ -3073,7 +3073,7 @@ FROM products NATURAL JOIN categories;
 
 The query below is equivalent to this one with `INNER JOIN`:
 
-```postgres
+```sql
 SELECT *
 FROM products INNER JOIN categories
 USING (category_id);
@@ -3083,7 +3083,7 @@ USING (category_id);
 
 If we want `NATURAL JOIN` to perform joins other than the `INNER JOIN`, we use the optional `[INNER|LEFT|JOIN]` specifications as shown below:
 
-```postgres
+```sql
 SELECT *
 FROM products NATURAL [INNER|LEFT|RIGHT] JOIN categories;
 ```
@@ -3111,7 +3111,7 @@ FROM products NATURAL [INNER|LEFT|RIGHT] JOIN categories;
 
 An example:
 
-```postgres
+```sql
 CREATE TABLE car (
 	id      INT          GENERATED ALWAYS AS IDENTITY,
 	make    VARCHAR(255) NOT NULL,
@@ -3140,7 +3140,7 @@ SELECT * FROM car;
 
 <br>
 
-```postgres
+```sql
 SELECT
 	make,
 	model,
@@ -3163,7 +3163,7 @@ FROM car;
 
 <br>
 
-```postgres
+```sql
 SELECT
 	make,
 	model,
@@ -3187,7 +3187,7 @@ ORDER BY car_condition;
 
 <br>
 
-```postgres
+```sql
 SELECT
 	SUM (
 		CASE
@@ -3217,7 +3217,7 @@ FROM car;
 
 Examples:
 
-```postgres
+```sql
 SELECT COALESCE (NULL, 'A', 'B', 'C') AS first_non_null;
 ```
 | first_non_null |
@@ -3226,7 +3226,7 @@ SELECT COALESCE (NULL, 'A', 'B', 'C') AS first_non_null;
 
 <br>
 
-```postgres
+```sql
 SELECT COALESCE (1, 2, 3) AS first_non_null;
 ```
 | first_non_null |
@@ -3235,7 +3235,7 @@ SELECT COALESCE (1, 2, 3) AS first_non_null;
 
 <br>
 
-```postgres
+```sql
 SELECT COALESCE (NULL, NULL) AS first_non_null;
 ```
 | first_non_null |
@@ -3273,7 +3273,7 @@ FROM items;
 
 The foolowing query is equivalent to the preivous one:
 
-```postgres
+```sql
 SELECT
     product,
     price,
@@ -3317,7 +3317,7 @@ SELECT NULLIF (1, 0) AS first_different;
 
 <br>
 
-```postgres
+```sql
 CREATE TABLE phone (
 	id         SERIAL       PRIMARY KEY,
 	make       VARCHAR(30)  NOT NULL,
@@ -3343,7 +3343,7 @@ SELECT * FROM phone;
 
 <br>
 
-```postgres
+```sql
 SELECT
     make,
     model,
@@ -3364,7 +3364,7 @@ FROM phone;
 
 Example:
 
-```postgres
+```sql
 CREATE TABLE product (
 	id           SERIAL       PRIMARY KEY,
 	product_name VARCHAR(255) NOT NULL UNIQUE,
@@ -3388,7 +3388,7 @@ FROM product;
 
 <br>
 
-```postgres
+```sql
 SELECT
 	product_name,
 	price,
@@ -3464,7 +3464,7 @@ Taking the `film`, `inventory` and `rental` tables from the `dvdrental` database
 
 <br>
 
-```postgres
+```sql
 -- Films with rental_rate above average
 
 SELECT film_id, title, rental_rate
@@ -3488,7 +3488,7 @@ WHERE rental_rate > (
 
 <br>
 
-```postgres
+```sql
 -- Films returned between 2005-05-29 and 2005-05-30
 SELECT film_id, title
 FROM film
@@ -3523,7 +3523,7 @@ WHERE film_id IN (
 
 As `EXISTS` only cares about the number of returned rows and not their contents, we can use this common convention:
 
-```postgres
+```sql
 EXISTS (
     SELECT 1
     FROM   table
@@ -3552,7 +3552,7 @@ An example using the `customer` and `payment` tables fom `dvdrental` database:
                     └─────────────────┘
 ```
 
-```postgres
+```sql
 -- Customers that have one or more payments
 
 SELECT first_name, last_name
@@ -3592,7 +3592,7 @@ An example using the `film`, `category` and `film_category` tables from the `dvd
 
 <br>
 
-```postgres
+```sql
 -- Action or drama films
 
 SELECT title, category_id
@@ -3617,7 +3617,7 @@ WHERE category_id = ANY (
 
 The query above fetches all movies whose genre is `Action` or `Drama`, and is equivalent to the following query with `IN`:
 
-```postgres
+```sql
 SELECT title, category_id
 FROM film INNER JOIN film_category
 USING (film_id)
@@ -3632,7 +3632,7 @@ WHERE category_id IN (
 
 However, the following queries are *not* equivalent:
 
-```postgres
+```sql
 -- Genre != 'Action' AND Genre != 'Drama'          -- Genre != 'Action' OR Genre != 'Drama'
 
 SELECT title, category_id                          SELECT title, category_id
@@ -3653,7 +3653,7 @@ WHERE category_id NOT IN (                         WHERE category_id != ANY (
 
 On the other hand, the queries below *are* equivalent:
 
-```postgres
+```sql
 -- Genre != 'Action'                               -- Genre != 'Action'
 
 SELECT title, category_id                          SELECT title, category_id
@@ -3692,7 +3692,7 @@ An example using the `film` table from the `dvdrental` database:
 
 <br>
 
-```postgres
+```sql
 -- Films with lenghts bigger than all averages
 
 SELECT film_id, title, length
@@ -3743,7 +3743,7 @@ Taking the `film` table from the `dvdrental` database as an example once again:
 
 The following query can be used to classify all movies by length:
 
-```postgres
+```sql
 SELECT 
 	film_id,
 	title,
@@ -3770,7 +3770,7 @@ FROM film
 
 We can then reuse the produced result set:
 
-```postgres
+```sql
 WITH length_classification AS (
 	SELECT 
 		film_id,
@@ -3815,7 +3815,7 @@ Taking the following `links` table as an example:
 
 <br>
 
-```postgres
+```sql
 INSERT INTO links (url, name)
 VALUES ('https://www.microsoft.com', 'Microsoft');
 ```
@@ -3826,7 +3826,7 @@ VALUES ('https://www.microsoft.com', 'Microsoft');
 
 <br>
 
-```postgres
+```sql
 INSERT INTO links (url, name, last_update)
 VALUES ('https://www.oreilly.com', 'O''Reilly Media', '2021-01-01'),
        ('https://www.amazon.com', 'Amazon', '2021-01-02');
@@ -3840,7 +3840,7 @@ VALUES ('https://www.oreilly.com', 'O''Reilly Media', '2021-01-01'),
 
 <br>
 
-```postgres
+```sql
 INSERT INTO links (url, name, last_update)
 VALUES ('https://www.apple.com', 'Apple', '2021-01-03')
 RETURNING id, name;
@@ -3874,7 +3874,7 @@ Taking the `links` table as an example once again:
 
 <br>
 
-```postgres
+```sql
 UPDATE links 
 SET url = 'apple.com'
 WHERE name = 'Apple';
@@ -3889,7 +3889,7 @@ WHERE name = 'Apple';
 
 <br>
 
-```postgres
+```sql
 UPDATE links 
 SET last_update = NULL
 WHERE last_update IS NOT NULL 
@@ -3934,7 +3934,7 @@ Taking the following `segment` and `car_on_sale` tables as an example:
 
 <br>
 
-```postgres
+```sql
 UPDATE car_on_sale 
 SET net_price = price * (1 - discount)
 FROM segment 
@@ -3965,7 +3965,7 @@ Taking the following `customers` table with *uniqueness constraint* on column `n
 
 <br>
 
-```postgres
+```sql
 INSERT INTO customers (name, email)
 VALUES ('Apple', 'contact@apple.com');
 ```
@@ -3978,7 +3978,7 @@ VALUES ('Apple', 'contact@apple.com');
 
 <br>
 
-```postgres
+```sql
 INSERT INTO customers (name, email)
 VALUES ('Apple', 'contact@apple.com')
 ON CONFLICT (name)
@@ -3993,7 +3993,7 @@ DO NOTHING;
 
 <br>
 
-```postgres
+```sql
 INSERT INTO customers (name, email)
 VALUES ('Apple', 'hotline@apple.com')
 ON CONFLICT (name)
@@ -4029,7 +4029,7 @@ Taking the `segment` and `car_on_sale` tables from the previous section as an ex
 
 <br>
 
-```postgres
+```sql
 DELETE FROM car_on_sale 
 WHERE name LIKE 'BMW%';
 ```
@@ -4043,7 +4043,7 @@ WHERE name LIKE 'BMW%';
 
 <br>
 
-```postgres
+```sql
 DELETE FROM car_on_sale 
 WHERE id = 6
 RETURNING name;
@@ -4079,7 +4079,7 @@ Taking the following `contact` and `blacklist` tables as an example:
 
 <br>
 
-```postgres
+```sql
 DELETE FROM contacts 
 USING blacklist
 WHERE contacts.phone = blacklist.phone;
@@ -4094,7 +4094,7 @@ The previous SQL statement works for PostgreSQL but is *not a part of the SQL st
 
 The following statement is an SQL-standard equivalent:
 
-```postgres
+```sql
 DELETE FROM contacts 
 WHERE phone IN (
     SELECT phone
@@ -4114,7 +4114,7 @@ Transactions can be *rolled back*.
 
 Example:
 
-```postgres
+```sql
 CREATE TABLE account (
 	id            SERIAL        PRIMARY KEY,
 	account_owner VARCHAR(255)  NOT NULL UNIQUE,
@@ -4137,7 +4137,7 @@ FROM account;
 
 <br>
 
-```postgres
+```sql
 -- Transfer $1,000 from Hilary to Itzhak
 
 BEGIN;
@@ -4152,7 +4152,7 @@ WHERE  id = 2;
 
 COMMIT;
 ```
-```postgres
+```sql
 SELECT   *
 FROM     account
 ORDER BY id;
